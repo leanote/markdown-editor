@@ -5,7 +5,7 @@
 确保在此之前安装了node, gulp
 ```
 > gulp # 生成res-min/main.js (https://github.com/leanote/desktop-app/blob/master/public/md/main.js)
-> gulp minify 压缩main.js -> main.min.js (https://github.com/leanote/desktop-app/blob/master/public/md/main.min.js)
+> gulp minify # 压缩main.js -> main.min.js (https://github.com/leanote/desktop-app/blob/master/public/md/main.min.js)
 ```
 
 ## 如何本地调试 ?
