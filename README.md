@@ -10,6 +10,37 @@ Leanote's Markdown Editor originally forked from [Stackedit](https://github.com/
 
 ## Build
 
+Please install `node` and `gulp` firstly.
+
+```
+> gulp # build res-min/main.js (https://github.com/leanote/leanote/blob/master/public/dist/main.js)
+> gulp minify # compress main.js to main.min.js (https://github.com/leanote/leanote/blob/master/public/dist/main.min.js)
+```
+
+## Local Debug
+
+```
+> node server.js
+```
+
+See: http://localhost:3000/editor.html
+
+![](screenshot.png)
+
+## Main Files
+
+* main.js [Entry]
+* editor.js [Main]
+* core.js [Core]
+* lib/Markdown.Editor.js [Markdown Core]
+
+## Integrated With Leanote Desktop App 使用
+copy res-min/main.js to leanote-dekstop-app's path `/public/md/`
+
+----------------------------
+
+## 构建
+
 确保在此之前安装了node, gulp
 
 ```
@@ -34,5 +65,6 @@ Leanote's Markdown Editor originally forked from [Stackedit](https://github.com/
 * core.js [主要]
 * lib/Markdown.Editor.js [主要]
 
-## Leanote Desktop App 使用
+## Leanote Desktop App 使用 Markdown 编辑器
+
 将 res-min/main.js 复制到 leanote-dekstop-app 的 `/public/md/` 下
