@@ -7,7 +7,7 @@
 > gulp minify # 将res-min的文件合并至leanote-ios
 ```
 
-## 如何本地调试 ?
+## 本地调试
 
 1. 访问
 public/editor-mobile-require.html
