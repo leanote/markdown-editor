@@ -15,7 +15,6 @@ Please install `node` and `gulp` firstly.
 ```
 > gulp # build res-min/main.js
 > gulp minify # build res-min to leanote-ios
-
 ```
 
 ## Local Debug
