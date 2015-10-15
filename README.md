@@ -1,4 +1,4 @@
-# Markdown Editor for Leanote IOS
+# Markdown Editor for Leanote iOS
 
 ## 命令
 
@@ -15,8 +15,7 @@ public/editor-mobile-require.html
 2. 访问
 public/editor-mobile.html?debug
 
-显示preview: LEAMD.togglePreview();
-
+显示preview: `LEAMD.togglePreview();`
 
 ## 目录
 
