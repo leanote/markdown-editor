@@ -1,0 +1,12 @@
+{
+  "name": "xregexp",
+  "homepage": "https://github.com/slevithan/xregexp",
+  "_release": "d06eff50f8",
+  "_resolution": {
+    "type": "commit",
+    "commit": "d06eff50f87d81d2dd3afc1e854784c38b17bcc4"
+  },
+  "_source": "git://github.com/slevithan/xregexp.git",
+  "_target": "d06eff50f87d81d2dd3afc1e854784c38b17bcc4",
+  "_originalSource": "xregexp"
+}

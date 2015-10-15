@@ -1,0 +1,25 @@
+{
+  "name": "MutationObservers",
+  "homepage": "https://github.com/Polymer/MutationObservers",
+  "authors": [
+    "The Polymer Authors"
+  ],
+  "description": "Mutation Observers Polyfill",
+  "main": "MutationObserver.js",
+  "keywords": [
+    "mutationobservers"
+  ],
+  "dependencies": {
+    "WeakMap": "Polymer/WeakMap#0.2.4"
+  },
+  "license": "BSD",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "version": "0.2.4"
+}

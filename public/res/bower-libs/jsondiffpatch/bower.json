@@ -1,0 +1,28 @@
+{
+  "name": "jsondiffpatch",
+  "description": "Diff & Patch for Javascript objects",
+  "main": "build/bundle.js",
+  "license": "MIT",
+  "authors": [
+    "Benjamin Eidelman <beneidel@gmail.com>"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/benjamine/jsondiffpatch.git"
+  },
+  "keywords": [
+    "json",
+    "diff",
+    "patch",
+    "jsondiffpatch"
+  ],
+  "ignore": [
+    "test",
+    "test-external",
+    "demo",
+    "docs",
+    ".travis.yml",
+    "karma.conf.js",
+    "gulpfile.js"
+  ]
+}

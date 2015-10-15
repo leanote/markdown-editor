@@ -1,0 +1,12 @@
+{
+  "name": "js-sequence-diagrams",
+  "homepage": "https://github.com/benweet/js-sequence-diagrams",
+  "_release": "d60c973aa0",
+  "_resolution": {
+    "type": "commit",
+    "commit": "d60c973aa0ff148dc588c7ceee0b41e59dff3f9f"
+  },
+  "_source": "https://github.com/benweet/js-sequence-diagrams.git",
+  "_target": "d60c973aa0ff148dc588c7ceee0b41e59dff3f9f",
+  "_originalSource": "https://github.com/benweet/js-sequence-diagrams.git"
+}

@@ -1,0 +1,28 @@
+{
+  "name": "monetizejs",
+  "main": "src/monetize.js",
+  "version": "0.2.0",
+  "homepage": "https://github.com/monetizejs/monetize.js",
+  "authors": [
+    "contact@monetizejs.com"
+  ],
+  "description": "MonetizeJS official client side library",
+  "moduleType": [
+    "amd",
+    "globals"
+  ],
+  "keywords": [
+    "MonetizeJS",
+    "monetizejs",
+    "monetize.js",
+    "monetize"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

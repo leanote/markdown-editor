@@ -1,0 +1,12 @@
+{
+  "name": "pagedown-extra",
+  "homepage": "https://github.com/jmcmanus/pagedown-extra",
+  "_release": "ea782c3d11",
+  "_resolution": {
+    "type": "commit",
+    "commit": "ea782c3d11eb78f57d00aa819527338996a70721"
+  },
+  "_source": "https://github.com/jmcmanus/pagedown-extra.git",
+  "_target": "ea782c3d11eb78f57d00aa819527338996a70721",
+  "_originalSource": "https://github.com/jmcmanus/pagedown-extra.git"
+}

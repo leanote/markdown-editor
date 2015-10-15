@@ -1,0 +1,15 @@
+{
+  "name": "flowchart",
+  "version": "1.3.4",
+  "main": "./release/flowchart-1.3.4.min.js",
+  "dependencies": {},
+  "ignore": [
+    "src/",
+    "buildtasks/",
+    "example/",
+    ".gitignore",
+    "Gruntfile.js",
+    "package.json",
+    "**/*.zip"
+  ]
+}

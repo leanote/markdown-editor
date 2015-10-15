@@ -1,0 +1,14 @@
+{
+  "name": "yaml.js",
+  "homepage": "https://github.com/jeremyfa/yaml.js",
+  "version": "0.1.6",
+  "_release": "0.1.6",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.1.6",
+    "commit": "eb971c74a48ea5bb8589dfb7edf3c5750b5b87ae"
+  },
+  "_source": "https://github.com/jeremyfa/yaml.js.git",
+  "_target": "~0.1.4",
+  "_originalSource": "https://github.com/jeremyfa/yaml.js.git"
+}

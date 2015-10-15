@@ -1,0 +1,34 @@
+{
+  "name": "prism",
+  "main": [
+    "prism.js",
+    "prism.css"
+  ],
+  "homepage": "http://prismjs.com",
+  "authors": "Lea Verou",
+  "description": "Lightweight, robust, elegant syntax highlighting. A spin-off project from Dabblet.",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "img",
+    "templates",
+    "CNAME",
+    "*.html",
+    "style.css",
+    "favicon.png",
+    "logo.svg",
+    "download.js",
+    "prefixfree.min.js",
+    "utopia.js",
+    "code.js",
+    "components.js"
+  ],
+  "_release": "a12e8692b5",
+  "_resolution": {
+    "type": "commit",
+    "commit": "a12e8692b5f660a0123a06f74935f75386a93042"
+  },
+  "_source": "git://github.com/LeaVerou/prism.git",
+  "_target": "a12e8692b5f660a0123a06f74935f75386a93042",
+  "_originalSource": "prism"
+}
