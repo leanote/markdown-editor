@@ -2,63 +2,35 @@
 
 ## 命令
 
+确保在此之前安装了node, gulp
 ```
-> npm install
-
-> gulp # 运行, 生成res-min/main.js
-> gulp minify 将main.js -> main.min.js
+> gulp # 生成res-min/main.js (https://github.com/leanote/leanote/blob/master/public/dist/main.js)
+> gulp minify 压缩main.js -> main.min.js (https://github.com/leanote/leanote/blob/master/public/dist/main.min.js)
 ```
-
-将 main.min.js copy 到 leanote public/dist/ 下
 
 ## 如何本地调试 ?
 
-node server.js
+```
+> node server.js
+```
 
 访问: http://localhost:3000/editor.html
 
-## 经常修改文件
+![](screenshot.png)
 
-main.js 入口
-editor.js 
-core.js [主要]
-lib/Markdown.Editor.js [主要]
+## 主要文件
+
+* main.js 入口
+* editor.js [主要]
+* core.js [主要]
+* lib/Markdown.Editor.js [主要]
 
 ## Leanote如何使用?
+将res-min/main.js复制到leanote的/public/dist/ 下
 
-<script src="/js/require.js"></script>
-<script src="/public/dist/main.js"></script>
+node-dev.html:
 
-## Leanote 开发
-
-替换node-dev.html
-
-```
-<script>
-initPage();
-window.require = {
-    baseUrl: '/public/res', // res指向源码
-};
-</script>
-
-<!-- pro_markdown_js -->
-
-<!-- dev -->
-<script src="/js/require.js"></script>
-<script src="/public/res/main.js"></script>
-<!-- /dev -->
-
-<!--
-不要
-<script src="/public/js/plugins/main.js"></script>
--->
-</body>
-
-```
-
-正常的node-dev.html:
-
-```
+```html
 <script>
 initPage();
 // 当tinymce.dev.js时, 请注释require
@@ -78,4 +50,27 @@ window.require = {
 </body>
 ```
 
-![](screenshot.png)
+## Leanote 开发
+
+替换node-dev.html
+
+```html
+<script>
+initPage();
+window.require = {
+    baseUrl: '/public/res', // res指向源码
+};
+</script>
+
+<!-- pro_markdown_js -->
+
+<!-- dev -->
+<script src="/js/require.js"></script>
+<script src="/public/res/main.js"></script>
+<!-- /dev -->
+
+<!--
+不要
+<script src="/public/js/plugins/main.js"></script>
+-->
+</body>
