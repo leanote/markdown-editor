@@ -1,6 +1,14 @@
 # Markdown Editor For Leanote Desktop App
 
-## 命令
+Leanote's Markdown Editor originally forked from [Stackedit](https://github.com/benweet/stackedit). The Stackedit source is under an Apache License (http://www.apache.org/licenses/LICENSE-2.0) and The code updated by Leanote is under GPL v2.
+
+## Branches
+
+* [master](https://github.com/leanote/desktop-app) Markdown Editor For [Leanote](https://github.com/leanote/leanote)
+* [desktop-app](https://github.com/leanote/markdown-editor/tree/desktop-app) Markdown Editor For [Leanote Desktop App](https://github.com/leanote/desktop-app)
+* [ios](https://github.com/leanote/markdown-editor/tree/ios) Markdown Editor For [Leanote iOS](https://github.com/leanote/desktop-ios)
+
+## Build
 
 确保在此之前安装了node, gulp
 
