@@ -21,19 +21,26 @@ requirejs.config({
 		jgrowl: 'bower-libs/jgrowl/jquery.jgrowl',
 		mousetrap: 'bower-libs/mousetrap/mousetrap',
 		'mousetrap-record': 'bower-libs/mousetrap/plugins/record/mousetrap-record',
-		toMarkdown: 'bower-libs/to-markdown/src/to-markdown',
+		// toMarkdown: 'bower-libs/to-markdown/src/to-markdown',
 		text: 'bower-libs/requirejs-text/text',
 		mathjax: 'libs/MathJax/MathJax.js?config=TeX-AMS_HTML',
-		bootstrap: 'bower-libs/bootstrap/dist/js/bootstrap',
+		// bootstrap: 'bower-libs/bootstrap/dist/js/bootstrap',
 		requirejs: 'bower-libs/requirejs/require',
 		'google-code-prettify': 'bower-libs/google-code-prettify/src/prettify',
-		highlightjs: 'libs/highlight/highlight.pack',
+		// highlightjs: 'libs/highlight/highlight.pack',
 		'jquery-waitforimages': 'bower-libs/waitForImages/src/jquery.waitforimages',
+		// 'jquery-ui': 'bower-libs/jquery-ui/ui/jquery-ui',
+		// 'jquery-ui-core': 'bower-libs/jquery-ui/ui/jquery.ui.core',
+		// 'jquery-ui-widget': 'bower-libs/jquery-ui/ui/jquery.ui.widget',
+		// 'jquery-ui-mouse': 'bower-libs/jquery-ui/ui/jquery.ui.mouse',
+		// 'jquery-ui-draggable': 'bower-libs/jquery-ui/ui/jquery.ui.draggable',
+		// 'jquery-ui-effect': 'bower-libs/jquery-ui/ui/jquery.ui.effect',
+		// 'jquery-ui-effect-slide': 'bower-libs/jquery-ui/ui/jquery.ui.effect-slide',
 		FileSaver: 'bower-libs/FileSaver/FileSaver',
 		stacktrace: 'bower-libs/stacktrace/stacktrace',
 		'requirejs-text': 'bower-libs/requirejs-text/text',
-		'bootstrap-tour': 'bower-libs/bootstrap-tour/build/js/bootstrap-tour',
-		css_browser_selector: 'bower-libs/css_browser_selector/css_browser_selector',
+		// 'bootstrap-tour': 'bower-libs/bootstrap-tour/build/js/bootstrap-tour',
+		// css_browser_selector: 'bower-libs/css_browser_selector/css_browser_selector',
 		'pagedown-extra': 'bower-libs/pagedown-extra/node-pagedown-extra',
 		pagedownExtra: 'bower-libs/pagedown-extra/Markdown.Extra',
 		pagedown: 'libs/Markdown.Editor',
@@ -54,15 +61,17 @@ requirejs.config({
 		diff_match_patch: 'bower-libs/google-diff-match-patch-js/diff_match_patch',
 		diff_match_patch_uncompressed: 'bower-libs/google-diff-match-patch-js/diff_match_patch_uncompressed',
 		jsondiffpatch: 'bower-libs/jsondiffpatch/build/bundle',
-		hammerjs: 'bower-libs/hammerjs/hammer',
+		// hammerjs: 'bower-libs/hammerjs/hammer',
 		Diagram: 'bower-libs/js-sequence-diagrams/src/sequence-diagram',
 		'diagram-grammar': 'bower-libs/js-sequence-diagrams/build/diagram-grammar',
 		raphael: 'bower-libs/raphael/raphael',
 		'flow-chart': 'bower-libs/flowchart/release/flowchart.amd-1.3.4.min',
 		flowchart: 'bower-libs/flowchart/release/flowchart-1.3.4.min',
 		monetizejs: 'bower-libs/monetizejs/src/monetize',
+		// 'to-markdown': 'bower-libs/to-markdown/src/to-markdown',
 		waitForImages: 'bower-libs/waitForImages/dist/jquery.waitforimages',
-		MathJax: '../libs/MathJax/MathJax'
+		MathJax: '../libs/MathJax/MathJax',
+		// alertify: 'bower-libs/alertify.js/lib/alertify'
 	},
 	shim: {
 		underscore: {
@@ -108,9 +117,15 @@ requirejs.config({
 			'bower-libs/prism/components/prism-markup',
 			'libs/prism-latex'
 		],
-		'bootstrap-record': [
-			'mousetrap'
-		],
+		// 'bootstrap-record': [
+		// 	'mousetrap'
+		// ],
+		toMarkdown: {
+			deps: [
+				
+			],
+			exports: 'toMarkdown'
+		},
 		stacktrace: {
 			exports: 'printStackTrace'
 		},
@@ -120,10 +135,20 @@ requirejs.config({
 		MutationObservers: [
 			'WeakMap'
 		],
-		highlightjs: {
-			exports: 'hljs'
-		},
+		// highlightjs: {
+		// 	exports: 'hljs'
+		// },
+		// 'bootstrap-tour': {
+		// 	deps: [
+		// 		'bootstrap'
+		// 	],
+		// 	exports: 'Tour'
+		// },
+		// bootstrap: [
+			
+		// ],
 		'jquery-waitforimages': [
+			
 		],
 		pagedown: [
 			'libs/Markdown.Converter'
@@ -153,10 +178,6 @@ if(window.baseDir.indexOf('-min') !== -1) {
 	themeModule = "css!themes/" + window.theme;
 }
 */
-
-window.getMsg || (getMsg = function(msg) {
-	return msg;
-});
 
 // RequireJS entry point. By requiring synchronizer, publisher, sharing and
 // media-importer, we are actually loading all the modules

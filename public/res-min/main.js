@@ -29371,19 +29371,6 @@ define('extensions/toc',[
             _.each(tocEltList, function(elt) {
                 elt.innerHTML = htmlToc;
             });
-
-            $("#leanoteNavContentMd").height("auto"); // auto
-            try {
-                if(!$(htmlToc).text()) {
-                    $("#leanoteNavContentMd").html("&nbsp; &nbsp; Nothing...");
-                }
-            } catch(e) {}
-            // 这里, resize Height
-            var curH = $("#leanoteNavContentMd").height();
-            var pH = $("#mdEditor").height()-100;
-            if(curH > pH) {
-                $("#leanoteNavContentMd").height(pH);
-            }
         });
     };
 
@@ -29428,6 +29415,9 @@ define('extensions/scrollSync',[
 	"classes/Extension",
 	"text!html/scrollSyncSettingsBlock.html"
 ], function(_, Extension, scrollSyncSettingsBlockHTML) {
+
+    // life
+    return;
 
 	var scrollSync = new Extension("scrollSync", "Scroll Sync", true, true);
 	scrollSync.settingsBlock = scrollSyncSettingsBlockHTML;
@@ -29673,7 +29663,8 @@ define('extensions/scrollSync',[
 		editor.getConverter().hooks.chain("postConversion", function(text) {
 			// To avoid losing scrolling position before elements are fully loaded
 			previousHeight = previewContentsElt.offsetHeight;
-			previewContentsElt.style.height = previousHeight + 'px';
+			// 这里啊, fuck, 导致preview有时显示的高度只有一点点!!
+			// previewContentsElt.style.height = previousHeight + 'px';
 			return text;
 		});
 	};
@@ -30120,7 +30111,7 @@ define('extensions/htmlSanitizer',[
 	 */
 
 	var aHrefSanitizationWhitelist = /^\s*(https?|ftp|mailto|tel|file):/,
-		imgSrcSanitizationWhitelist = /^\s*(https?|ftp|file):|data:image\//;
+		imgSrcSanitizationWhitelist = /^\s*(https?|ftp|file|leanote):|data:image\//;
 
 	function sanitizeUri(uri, isImage) {
 		var regex = isImage ? imgSrcSanitizationWhitelist : aHrefSanitizationWhitelist;
@@ -31248,6 +31239,7 @@ var Token = _.Token = function(type, content) {
 	this.content = content;
 };
 
+// 来到这里啦, stringify
 Token.stringify = function(o, language, parent) {
 	if (typeof o == 'string') {
 		return o;
@@ -31280,8 +31272,6 @@ Token.stringify = function(o, language, parent) {
 	for (var name in env.attributes) {
 		attributes += name + '="' + (env.attributes[name] || '') + '"';
 	}
-
-	return '<' + env.tag + ' class="' + env.classes.join(' ') + '" ' + attributes + '>' + env.content + '</' + env.tag + '>';
 	
     // 原来是这里啊 token lf
     if(env.content == "\n") {
@@ -35764,6 +35754,7 @@ Prism.languages.md = (function() {
 
 define("libs/prism-markdown", function(){});
 
+
 /* jshint -W084, -W099 */
 // Credit to http://dabblet.com/
 define('editor',[
@@ -35948,6 +35939,7 @@ define('editor',[
 			return range;
 		};
 		var adjustScroll;
+        var $body = $('body');
 		var debouncedUpdateCursorCoordinates = utils.debounce(function() {
 			$inputElt.toggleClass('has-selection', this.selectionStart !== this.selectionEnd);
 			var coordinates = this.getCoordinates(this.selectionEnd, this.selectionEndContainer, this.selectionEndOffset);
@@ -35956,6 +35948,28 @@ define('editor',[
 				eventMgr.onCursorCoordinates(coordinates.x, coordinates.y);
 			}
 			if(adjustScroll) {
+                this.cursorY = ZSSEditor.getCaretYPosition();
+				log('adjustScroll: ' + this.cursorY);
+				var _windowHeight = $(window).height();
+                var realWindowHeight;
+                if(_windowHeight < windowHeight && _windowHeight + 50 < windowHeight) {
+                    // 证明, realWindowHeight就是windowHeight
+                    // log('不可能会这样: ' + _windowHeight + ' ' + windowHeight);
+                    realWindowHeight = _windowHeight;
+                } else {
+                    // log('windowHeight: ' + windowHeight + ' keyboardHeight: ' + keyboardHeight);
+                    realWindowHeight = windowHeight - keyboardHeight;
+                }
+
+				var bodyScrollTop = $body.scrollTop();
+                // 1043.5 - 827 + 15 > 524 - 293 = 231
+                // 231.
+				if(this.cursorY - bodyScrollTop + 55 > realWindowHeight) {
+					// log('need re ' + (bodyScrollTop + 55 + this.cursorY - bodyScrollTop - realWindowHeight));
+					$body.scrollTop(bodyScrollTop + 55 + this.cursorY - bodyScrollTop - realWindowHeight);
+				}
+				return;
+				
 				var adjustTop, adjustBottom;
 				adjustTop = adjustBottom = inputElt.offsetHeight / 2 * settings.cursorFocusRatio;
 				adjustTop = this.adjustTop || adjustTop;
@@ -35965,10 +35979,15 @@ define('editor',[
 					var cursorMaxY = inputElt.scrollTop + inputElt.offsetHeight - adjustBottom;
 					if(selectionMgr.cursorY < cursorMinY) {
 						inputElt.scrollTop += selectionMgr.cursorY - cursorMinY;
+						// console.log(inputElt);
+						// $('body').scrollTop(-(selectionMgr.cursorY - cursorMinY));
+						console.log(selectionMgr.cursorY - cursorMinY);
 					}
 					else if(selectionMgr.cursorY > cursorMaxY) {
 						inputElt.scrollTop += selectionMgr.cursorY - cursorMaxY;
+						console.log('xx' + (selectionMgr.cursorY - cursorMaxY));
 					}
+					console.log('adjustScroll haha');
 				}
 			}
 			adjustScroll = false;
@@ -36010,6 +36029,9 @@ define('editor',[
 		};
 		this.saveSelectionState = (function() {
 			function save() {
+                // life 2
+                // return;
+                log('save saveSelectionState');
 				if(fileChanged === false) {
 					var selectionStart = self.selectionStart;
 					var selectionEnd = self.selectionEnd;
@@ -36164,7 +36186,11 @@ define('editor',[
 
 	var selectionMgr = new SelectionMgr();
 	editor.selectionMgr = selectionMgr;
-	$(document).on('selectionchange', '.editor-content', _.bind(selectionMgr.saveSelectionState, selectionMgr, true, false));
+    var __save =  _.bind(selectionMgr.saveSelectionState, selectionMgr, true, false);
+	$(document).on('selectionchange', '.editor-content', __save);
+    // life, 为了第三方输入法啊
+    $(document).on('input ', '.editor-content', function() {
+    });
 
 	function adjustCursorPosition(force) {
 		if(inputElt === undefined) {
@@ -36229,6 +36255,8 @@ define('editor',[
 	};
 
 	window.we = editor;
+	// 初始化之
+	editor.setContent("");
 
 	function replace(selectionStart, selectionEnd, replacement) {
 		undoMgr.currentMode = undoMgr.currentMode || 'replace';
@@ -36675,6 +36703,10 @@ define('editor',[
 					clearNewline = false;
 				}
 			})
+            .on('newline', function() {
+                action('newline');
+                selectionMgr.updateCursorCoordinates(true);
+            })
 			.on('compositionstart', function() {
 				isComposing++;
 			})
@@ -36914,11 +36946,13 @@ define('editor',[
 		});
 	}
 
+    // 这个没什么用
 	function addTrailingLfNode() {
 		trailingLfNode = crel('span', {
-			class: 'token lf'
+			class: 'token lf life'
 		});
 		trailingLfNode.textContent = '\n';
+        // $(contentElt).append('\n<span class="token lf"></span>');
 		contentElt.appendChild(trailingLfNode);
 	}
 
@@ -36943,6 +36977,7 @@ define('editor',[
 			// log("pre")
 			// log(text);
 			// # lif
+            // life 去掉这个, 可以享受光标不易定位的问题
 			text = Prism.highlight(text, Prism.languages.md);
 			// log('after');
 			// <span class="token h1" ><span class="token md md-hash" >#</span> lif</span>
@@ -36952,7 +36987,7 @@ define('editor',[
 		if(frontMatter.length) {
 			// Front matter highlighting
 			frontMatter = escape(frontMatter);
-			frontMatter = frontMatter.replace(/\n/g, '<span class="token lf">\n</span>');
+			frontMatter = frontMatter.replace(/\n/g, '<span class="token lf life2">\n</span>');
 			text = '<span class="token md">' + frontMatter + '</span>' + text;
 		}
 		var sectionElt = crel('span', {
@@ -36967,6 +37002,7 @@ define('editor',[
 	eventMgr.onEditorCreated(editor);
 	return editor;
 });
+
 
 // needs Markdown.Converter.js at the moment
 
@@ -36988,40 +37024,41 @@ define('editor',[
         };
 
     var defaultsStrings = {
-        bold: getMsg("Strong") + ' <strong> Ctrl/Cmd+B',
-        boldexample: getMsg("strong text"),
+        bold: "Strong <strong> Ctrl/Cmd+B",
+        boldexample: "strong text",
 
-        italic: getMsg("Emphasis") + ' <em> Ctrl/Cmd+I',
-        italicexample: getMsg("emphasized text"),
+        italic: "Emphasis <em> Ctrl/Cmd+I",
+        italicexample: "emphasized text",
 
-        link: getMsg("Hyperlink") + ' <a> Ctrl/Cmd+L',
-        linkdescription: getMsg("enter link description here"),
+        link: "Hyperlink <a> Ctrl/Cmd+L",
+        linkdescription: "enter link description here",
         linkdialog: "<p><b>Insert Hyperlink</b></p><p>http://example.com/ \"optional title\"</p>",
 
-        quote: getMsg("Blockquote") + ' <blockquote> Ctrl/Cmd+Q',
-        quoteexample: getMsg("Blockquote"),
+        quote: "Blockquote <blockquote> Ctrl/Cmd+Q",
+        quoteexample: "Blockquote",
 
-        code: getMsg("Code Sample") + ' <pre><code> Ctrl/Cmd+K',
-        codeexample: getMsg("enter code here"),
+        code: "Code Sample <pre><code> Ctrl/Cmd+K",
+        codeexample: "enter code here",
 
-        image: getMsg("Image") + '<img> Ctrl/Cmd+G',
-        imagedescription: getMsg("enter image description here"),
+        image: "Image <img> Ctrl/Cmd+G",
+        imagedescription: "enter image description here",
         imagedialog: "<p><b>Insert Image</b></p><p>http://example.com/images/diagram.jpg \"optional title\"<br><br>Need <a href='http://www.google.com/search?q=free+image+hosting' target='_blank'>free image hosting?</a></p>",
 
-        olist: getMsg("Numbered List") +' <ol> Ctrl/Cmd+O',
-        ulist: getMsg("Bulleted List") +' <ul> Ctrl/Cmd+U',
-        litem: getMsg("List item"),
+        olist: "Numbered List <ol> Ctrl/Cmd+O",
+        ulist: "Bulleted List <ul> Ctrl/Cmd+U",
+        litem: "List item",
 
-        heading: getMsg("Heading") + ' <h1>/<h2> Ctrl/Cmd+H',
-        headingexample: getMsg("Heading"),
+        heading: "Heading <h1>/<h2> Ctrl/Cmd+H",
+        headingexample: "Heading",
 
-        hr: getMsg("Horizontal Rule") + ' <hr> Ctrl/Cmd+R',
+        hr: "Horizontal Rule <hr> Ctrl/Cmd+R",
 
-        undo: getMsg("Undo") + ' - Ctrl/Cmd+Z',
-        redo: getMsg("Redo") + ' - Ctrl/Cmd+Y',
+        undo: "Undo - Ctrl/Cmd+Z",
+        redo: "Redo - Ctrl/Cmd+Y",
 
         help: "Markdown Editing Help"
     };
+
 
     // -------------------------------------------------------------------
     //  YOUR CHANGES GO HERE
@@ -37069,6 +37106,8 @@ define('editor',[
             options.strings.help = options.strings.help || options.helpButton.title;
         }
         var getString = function (identifier) { return options.strings[identifier] || defaultsStrings[identifier]; }
+        // life
+        MD.getString = getString;
 
         idPostfix = idPostfix || "";
 
@@ -37093,6 +37132,7 @@ define('editor',[
 
             panels = new PanelCollection(idPostfix);
             var commandManager = new CommandManager(hooks, getString);
+            MD.commandManager = commandManager;
             var previewManager = new PreviewManager(markdownConverter, panels, function () { hooks.onPreviewRefresh(); });
             var uiManager;
 
@@ -37708,10 +37748,12 @@ define('editor',[
 
             //if (inputArea.selectionStart !== undefined && !uaSniffed.isOpera) {
 
+                // ios7下stateObj.start == 0, ios 8, 9是好的
                 inputArea.focus();
+                // log('stateObj.start:' + stateObj.start);
                 inputArea.selectionStart = stateObj.start;
                 inputArea.selectionEnd = stateObj.end;
-	        /*
+            /*
                 inputArea.scrollTop = stateObj.scrollTop;
 
             }
@@ -37785,7 +37827,7 @@ define('editor',[
                 inputArea.value = stateObj.text;
             }
             this.setInputAreaSelection();
-	        /*
+            /*
             setTimeout(function() {
                 inputArea.scrollTop = stateObj.scrollTop;
             }, 0);
@@ -38323,22 +38365,19 @@ define('editor',[
         }
         */
        
-        // life 新添加函数
-        // life
-        // isImage 2015/3/1
-        function insertLinkLife(link, text, isImage) {
+       function lifeApiPre() {
             inputBox.focus();
             if (undoManager) {
                 undoManager.setCommandMode();
             }
 
             var state = new TextareaState(panels);
-
             if (!state) {
                 return;
             }
 
             var chunks = state.getChunks(); // 得到chunk
+            // log('state.getChunks(): ' + panels.input.selectionStart)
             var fixupInputArea = function () {
                 inputBox.focus();
 
@@ -38346,16 +38385,69 @@ define('editor',[
                     state.setChunks(chunks);
                 }
 
+                // 这里state是什么?
                 state.restore();
                 previewManager.refresh();
             };
-
-            var a = commandProto.insertLink(chunks, fixupInputArea, link, text, isImage);
-            if(!a) fixupInputArea();
+            return [fixupInputArea, chunks];
+       }
+       
+        // life 新添加函数
+        // life
+        // isImage 2015/3/1
+        function insertLinkLife(link, text, isImage) {
+            // log('insert link');
+            var fixupInputAreaAndChunks = lifeApiPre();
+            if(!fixupInputAreaAndChunks) {
+                return;
+            }
+            var a = commandProto.insertLink(fixupInputAreaAndChunks[1], fixupInputAreaAndChunks[0], link, text, isImage);
+            if(!a) fixupInputAreaAndChunks[0]();
         }
        
         // life
         MD.insertLink = insertLinkLife;
+        MD.execCommand = function(cmdName) {
+            // life2
+            // log(' saveSelectionState first2233');
+            MD.selectionMgr.saveSelectionState();
+            var fixupInputAreaAndChunks = lifeApiPre();
+            if(!fixupInputAreaAndChunks) {
+                return;
+            }
+            var re;
+
+            switch (cmdName) {
+                case 'bold':
+                re = MD.commandManager.doBold(fixupInputAreaAndChunks[1], fixupInputAreaAndChunks[0]);
+                break;
+                case 'italic':
+                re = MD.commandManager.doItalic(fixupInputAreaAndChunks[1], fixupInputAreaAndChunks[0]);
+                break;
+                case 'numberList':
+                re = MD.commandManager.doList(fixupInputAreaAndChunks[1], fixupInputAreaAndChunks[0], true);
+                break;
+                case 'list':
+                re = MD.commandManager.doList(fixupInputAreaAndChunks[1], fixupInputAreaAndChunks[0], false);
+                break;
+                case 'code':
+                re = MD.commandManager.doCode(fixupInputAreaAndChunks[1], fixupInputAreaAndChunks[0]);
+                break;
+                case 'blockquote':
+                re = MD.commandManager.doBlockquote(fixupInputAreaAndChunks[1], fixupInputAreaAndChunks[0]);
+                break;
+                case 'heading':
+                re = MD.commandManager.doHeading(fixupInputAreaAndChunks[1], fixupInputAreaAndChunks[0]);
+                break;
+                case 'hr':
+                re = MD.commandManager.doHorizontalRule(fixupInputAreaAndChunks[1], fixupInputAreaAndChunks[0]);
+                break;
+                case 'blank':
+                re = false; // MD.commandManager.doBlank(fixupInputAreaAndChunks[1], fixupInputAreaAndChunks[0]);
+                break;
+            }
+            if(!re) fixupInputAreaAndChunks[0]();
+        }
 
         // Perform the button's action.
         function doClick(button) {
@@ -38411,8 +38503,8 @@ define('editor',[
                 if (!noCleanup) {
                     fixupInputArea();
                     if(!linkOrImage) {
-	                    inputBox.adjustCursorPosition();
-	                    //inputBox.dispatchEvent(new Event('keydown'));
+                        inputBox.adjustCursorPosition();
+                        //inputBox.dispatchEvent(new Event('keydown'));
                     }
                 }
 
@@ -38761,7 +38853,7 @@ define('editor',[
             this.addLinkDef(chunk, null);
         }
         else {
-
+            
             // We're moving start and end tag back into the selection, since (as we're in the else block) we're not
             // *removing* a link, but *adding* one, so whatever findTags() found is now back to being part of the
             // link text. linkEnteredCallback takes care of escaping any brackets.
@@ -38775,17 +38867,38 @@ define('editor',[
             var that = this;
             // The function to be executed when you enter a link and press OK or Cancel.
             // Marks up the link and adds the ref.
-            var linkEnteredCallback = function (link) {
+            var linkEnteredCallback = function (links) {
                 background.parentNode.removeChild(background);
+                if(typeof links == 'string') {
+                    links = [links];
+                }
 
-                if (link !== null) {
-                    chunk.selection = (" " + chunk.selection).replace(/([^\\](?:\\\\)*)(?=[[\]])/g, "$1\\").substr(1);
+                if(!text) {
+                    text = 'title';
+                }
+                if(links.length == 1) {
+                    var link = links[0];
+                    if (link) {
+                        chunk.selection = (" " + chunk.selection).replace(/([^\\](?:\\\\)*)(?=[[\]])/g, "$1\\").substr(1);
 
-                    chunk.startTag = isImage ? "![" : "[";
-                    //chunk.endTag = "][" + num + "]";
-                    chunk.endTag = "](" + properlyEncoded(link) + ")";
+                        chunk.startTag = isImage ? "![" : "[";
+                        //chunk.endTag = "][" + num + "]";
+                        chunk.endTag = "](" + properlyEncoded(link) + ")";
 
-                    chunk.selection = text;
+                        chunk.selection = text;
+                    }
+                }
+                else {
+                    chunk.selection = '';
+                    chunk.startTag = '';
+                    chunk.endTag = '';
+                    for(var i = 0; i < links.length; ++i) {
+                        var link = links[i];
+                        if (!link) {
+                            continue;
+                        }
+                        chunk.startTag += (isImage ? "![" : "[") + text + '](' + properlyEncoded(link) + ")\n";
+                    }
                 }
                 postProcessing();
             };
@@ -38826,7 +38939,8 @@ define('editor',[
             var that = this;
             // The function to be executed when you enter a link and press OK or Cancel.
             // Marks up the link and adds the ref.
-            var linkEnteredCallback = function (link, text) {
+            var linkEnteredCallback = function (link) {
+
                 background.parentNode.removeChild(background);
 
                 if (link !== null) {
@@ -38856,21 +38970,16 @@ define('editor',[
                     var num = that.addLinkDef(chunk, linkDef);
                     */
                     chunk.startTag = isImage ? "![" : "[";
-                    // chunk.endTag = "][" + num + "]";
+                    //chunk.endTag = "][" + num + "]";
                     chunk.endTag = "](" + properlyEncoded(link) + ")";
 
                     if (!chunk.selection) {
-                        var str = '';
-                        if (text) {
-                            str = text;
-                        } else if (isImage) {
-                            str = that.getString("imagedescription");
+                        if (isImage) {
+                            chunk.selection = that.getString("imagedescription");
                         }
                         else {
-                            str = that.getString("linkdescription");
+                            chunk.selection = that.getString("linkdescription");
                         }
-
-                        chunk.selection = str;
                     }
                 }
                 postProcessing();
@@ -38885,7 +38994,7 @@ define('editor',[
             }
             else {
                 if (!this.hooks.insertLinkDialog(linkEnteredCallback))
-                	ui.prompt(this.getString("linkdialog"), linkDefaultText, linkEnteredCallback);
+                    ui.prompt(this.getString("linkdialog"), linkDefaultText, linkEnteredCallback);
             }
             return true;
         }
@@ -39080,7 +39189,6 @@ define('editor',[
         }
     };
 
-    // 这里, 应该用 ``` ```
     commandProto.doCode = function (chunk, postProcessing) {
 
         var hasTextBefore = /\S[ ]*$/.test(chunk.before);
@@ -39310,9 +39418,9 @@ define('editor',[
         chunk.selection = "";
         chunk.skipLines(1, 1, true);
     }
+   
 
 })();
-
 define("pagedown", function(){});
 
 /*globals MD:true, Markdown */
@@ -39349,21 +39457,12 @@ define('core',[
 		}
 	}
 
-	// Create the PageDown editor
-	var pagedownEditor;
-	var fileDesc;
-	var insertLinkO = $('<div class="modal fade modal-insert-link"><div class="modal-dialog"><div class="modal-content">'
-			+ '<div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>'
-			+ '<h4 class="modal-title">' + getMsg('Hyperlink') + '</h4></div>'
-			+ '<div class="modal-body"><p>' + getMsg('Please provide the link URL and an optional title') + ':</p>'
-			+ '<div class="input-group"><span class="input-group-addon"><i class="fa fa-link"></i></span><input id="input-insert-link" type="text" class="col-sm-5 form-control" placeholder="http://example.com  ' + getMsg('optional title') + '"></div></div><div class="modal-footer"><a href="#" class="btn btn-default" data-dismiss="modal">' + getMsg('Cancel') + '</a> <a href="#" class="btn btn-primary action-insert-link" data-dismiss="modal">' + getMsg('OK') + '</a></div></div></div></div>');
-
-	var actionInsertLinkO = insertLinkO.find('.action-insert-link');
-
-
 	// Load settings in settings dialog
 	// var $themeInputElt;
 
+	// Create the PageDown editor
+	var pagedownEditor;
+	var fileDesc;
 	core.initEditorFirst = function() {
 		// Create the converter and the editor
 		var converter = new Markdown.Converter();
@@ -39392,7 +39491,7 @@ define('core',[
 		pagedownEditor.hooks.set("insertLinkDialog", function(callback) {
 			core.insertLinkCallback = callback;
 			utils.resetModalInputs();
-			insertLinkO.modal();
+			$(".modal-insert-link").modal();
 			return true;
 		});
 		// Custom insert image dialog
@@ -39404,7 +39503,7 @@ define('core',[
 			utils.resetModalInputs();
 			var ifr = $("#leauiIfrForMD");
 			if(!ifr.attr('src')) {
-				ifr.attr('src', '/album/index?md=1');
+				ifr.attr('src', '/tinymce/plugins/leaui_image/index.html?md=1');
 			}
 
 			$(".modal-insert-image").modal();
@@ -39511,33 +39610,17 @@ define('core',[
 		});
 
 		// Click events on "insert link" and "insert image" dialog buttons
-		actionInsertLinkO.click(function(e) {
+		$(".action-insert-link").click(function(e) {
 			var value = utils.getInputTextValue($("#input-insert-link"), e);
 			if(value !== undefined) {
-				var arr = value.split(' ');
-				var text = '';
-				var link = arr[0];
-				if (arr.length > 1) {
-					arr.shift();
-					text = $.trim(arr.join(' '));
-				}
-				core.insertLinkCallback(link, text);
+				core.insertLinkCallback(value);
 				core.insertLinkCallback = undefined;
 			}
 		});
-
 		// 插入图片
 		$(".action-insert-image").click(function() {
 			// 得到图片链接或图片
-			/*
-			https://github.com/leanote/leanote/issues/171
-			同遇到了网页编辑markdown时不能添加图片的问题。
-			可以上传图片，但是按下“插入图片”按钮之后，编辑器中没有加入![...](...)
-			我的控制台有这样的错误： TypeError: document.mdImageManager is undefined
-			*/
-			// mdImageManager是iframe的name, mdGetImgSrc是iframe内的全局方法
-			// var value = document.mdImageManager.mdGetImgSrc();
-			var value = document.getElementById('leauiIfrForMD').contentWindow.mdGetImgSrc();
+			var value = document.mdImageManager.mdGetImgSrc();
 			// var value = utils.getInputTextValue($("#input-insert-image"), e);
 			if(value) {
 				core.insertLinkCallback(value);
@@ -39546,7 +39629,7 @@ define('core',[
 		});
 
 		// Hide events on "insert link" and "insert image" dialogs
-		insertLinkO.on('hidden.bs.modal', function() {
+		$(".modal-insert-link, .modal-insert-image").on('hidden.bs.modal', function() {
 			if(core.insertLinkCallback !== undefined) {
 				core.insertLinkCallback(null);
 				core.insertLinkCallback = undefined;
@@ -39560,7 +39643,7 @@ define('core',[
 
 		// 弹框显示markdown语法
 		$('#wmd-help-button').click(function() {
-	        window.open("http://leanote.com/blog/post/531b263bdfeb2c0ea9000002");
+	        window.open("http://leanote.com/blog/view/531b263bdfeb2c0ea9000002");
 		});
 
 		// Load images
@@ -40488,19 +40571,26 @@ requirejs.config({
 		jgrowl: 'bower-libs/jgrowl/jquery.jgrowl',
 		mousetrap: 'bower-libs/mousetrap/mousetrap',
 		'mousetrap-record': 'bower-libs/mousetrap/plugins/record/mousetrap-record',
-		toMarkdown: 'bower-libs/to-markdown/src/to-markdown',
+		// toMarkdown: 'bower-libs/to-markdown/src/to-markdown',
 		text: 'bower-libs/requirejs-text/text',
 		mathjax: 'libs/MathJax/MathJax.js?config=TeX-AMS_HTML',
-		bootstrap: 'bower-libs/bootstrap/dist/js/bootstrap',
+		// bootstrap: 'bower-libs/bootstrap/dist/js/bootstrap',
 		requirejs: 'bower-libs/requirejs/require',
 		'google-code-prettify': 'bower-libs/google-code-prettify/src/prettify',
-		highlightjs: 'libs/highlight/highlight.pack',
+		// highlightjs: 'libs/highlight/highlight.pack',
 		'jquery-waitforimages': 'bower-libs/waitForImages/src/jquery.waitforimages',
+		// 'jquery-ui': 'bower-libs/jquery-ui/ui/jquery-ui',
+		// 'jquery-ui-core': 'bower-libs/jquery-ui/ui/jquery.ui.core',
+		// 'jquery-ui-widget': 'bower-libs/jquery-ui/ui/jquery.ui.widget',
+		// 'jquery-ui-mouse': 'bower-libs/jquery-ui/ui/jquery.ui.mouse',
+		// 'jquery-ui-draggable': 'bower-libs/jquery-ui/ui/jquery.ui.draggable',
+		// 'jquery-ui-effect': 'bower-libs/jquery-ui/ui/jquery.ui.effect',
+		// 'jquery-ui-effect-slide': 'bower-libs/jquery-ui/ui/jquery.ui.effect-slide',
 		FileSaver: 'bower-libs/FileSaver/FileSaver',
 		stacktrace: 'bower-libs/stacktrace/stacktrace',
 		'requirejs-text': 'bower-libs/requirejs-text/text',
-		'bootstrap-tour': 'bower-libs/bootstrap-tour/build/js/bootstrap-tour',
-		css_browser_selector: 'bower-libs/css_browser_selector/css_browser_selector',
+		// 'bootstrap-tour': 'bower-libs/bootstrap-tour/build/js/bootstrap-tour',
+		// css_browser_selector: 'bower-libs/css_browser_selector/css_browser_selector',
 		'pagedown-extra': 'bower-libs/pagedown-extra/node-pagedown-extra',
 		pagedownExtra: 'bower-libs/pagedown-extra/Markdown.Extra',
 		pagedown: 'libs/Markdown.Editor',
@@ -40521,15 +40611,17 @@ requirejs.config({
 		diff_match_patch: 'bower-libs/google-diff-match-patch-js/diff_match_patch',
 		diff_match_patch_uncompressed: 'bower-libs/google-diff-match-patch-js/diff_match_patch_uncompressed',
 		jsondiffpatch: 'bower-libs/jsondiffpatch/build/bundle',
-		hammerjs: 'bower-libs/hammerjs/hammer',
+		// hammerjs: 'bower-libs/hammerjs/hammer',
 		Diagram: 'bower-libs/js-sequence-diagrams/src/sequence-diagram',
 		'diagram-grammar': 'bower-libs/js-sequence-diagrams/build/diagram-grammar',
 		raphael: 'bower-libs/raphael/raphael',
 		'flow-chart': 'bower-libs/flowchart/release/flowchart.amd-1.3.4.min',
 		flowchart: 'bower-libs/flowchart/release/flowchart-1.3.4.min',
 		monetizejs: 'bower-libs/monetizejs/src/monetize',
+		// 'to-markdown': 'bower-libs/to-markdown/src/to-markdown',
 		waitForImages: 'bower-libs/waitForImages/dist/jquery.waitforimages',
-		MathJax: '../libs/MathJax/MathJax'
+		MathJax: '../libs/MathJax/MathJax',
+		// alertify: 'bower-libs/alertify.js/lib/alertify'
 	},
 	shim: {
 		underscore: {
@@ -40575,9 +40667,15 @@ requirejs.config({
 			'bower-libs/prism/components/prism-markup',
 			'libs/prism-latex'
 		],
-		'bootstrap-record': [
-			'mousetrap'
-		],
+		// 'bootstrap-record': [
+		// 	'mousetrap'
+		// ],
+		toMarkdown: {
+			deps: [
+				
+			],
+			exports: 'toMarkdown'
+		},
 		stacktrace: {
 			exports: 'printStackTrace'
 		},
@@ -40587,10 +40685,20 @@ requirejs.config({
 		MutationObservers: [
 			'WeakMap'
 		],
-		highlightjs: {
-			exports: 'hljs'
-		},
+		// highlightjs: {
+		// 	exports: 'hljs'
+		// },
+		// 'bootstrap-tour': {
+		// 	deps: [
+		// 		'bootstrap'
+		// 	],
+		// 	exports: 'Tour'
+		// },
+		// bootstrap: [
+			
+		// ],
 		'jquery-waitforimages': [
+			
 		],
 		pagedown: [
 			'libs/Markdown.Converter'
@@ -40620,10 +40728,6 @@ if(window.baseDir.indexOf('-min') !== -1) {
 	themeModule = "css!themes/" + window.theme;
 }
 */
-
-window.getMsg || (getMsg = function(msg) {
-	return msg;
-});
 
 // RequireJS entry point. By requiring synchronizer, publisher, sharing and
 // media-importer, we are actually loading all the modules

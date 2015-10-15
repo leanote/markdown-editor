@@ -1,8 +1,8 @@
 {
-  "name": "Leanote-Markdown-Editor",
+  "name": "Leanote-Markdown-Editor-For-Leanote-iOS",
   "version": "4.5.0",
   "private": true,
-  "description": "Markdown Editor For Leanote",
+  "description": "Markdown Editor For Leanote iOS",
   "main": "res/main.js",
   "engines": {
     "node": "0.10.x"

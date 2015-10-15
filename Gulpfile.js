@@ -68,7 +68,7 @@ gulp.task('copy-requirejs', ['clean-requirejs'], function() {
 });
 
 gulp.task('requirejs', [
-	'copy-requirejs',
+	// 'copy-requirejs',
 	'constants'
 ], function() {
 	return requirejs({
@@ -132,13 +132,12 @@ gulp.task('clean-less', function() {
 
 gulp.task('less', ['clean-less'], function() {
 	return gulp.src([
-		'./public/res/styles/base.less',
-		'./public/res/themes/*.less'
+		'./css/*.less'
 	])
 		.pipe(less({
 			compress: false
 		}))
-		.pipe(gulp.dest('./public/res-min/themes/'));
+		.pipe(gulp.dest('./css'));
 });
 
 /** __________________________________________
@@ -234,7 +233,7 @@ gulp.task('default', function(cb) {
 	runSequence([
 			// 'jshint',
 			'requirejs',
-			// 'less',
+			'less',
 			// 'copy-font',
 			// 'copy-img'
 		],
@@ -242,12 +241,14 @@ gulp.task('default', function(cb) {
 		cb);
 });
 
+/*
 gulp.task('minify', function(cb) {
 	runSequence([
 		'minifyIt',
 		],
 		cb);
 });
+*/
 
 function bumpTask(importance) {
 	return function() {
@@ -307,3 +308,65 @@ function releaseTask(importance) {
 gulp.task('patch', releaseTask('patch'));
 gulp.task('minor', releaseTask('minor'));
 gulp.task('major', releaseTask('major'));
+
+//-----------
+
+// for markdown
+
+var markdownRaw = './public';
+var markdownMin = './public/leanote-ios';
+
+var concat = require('gulp-concat');
+var minifyHtml = require("gulp-minify-html");
+
+// min main.js, 无用
+gulp.task('jsmin', function() {
+    return gulp
+        .src(markdownRaw + '/main.js')
+        .pipe(uglify())
+        .pipe(rename({ suffix: '.min' }))
+        .pipe(gulp.dest(markdownMin));
+});
+
+// 合并Js
+gulp.task('concatJs', function() {
+    return gulp
+        .src([markdownRaw + '/res-min/jquery.min.js', markdownRaw + '/res-min/before.js', markdownRaw + '/res-min/require.min.js', markdownRaw + '/res-min/main.js', markdownRaw + '/res-min/editor.js'])
+        // .pipe(uglify())
+        .pipe(concat('all.js'))
+        .pipe(gulp.dest(markdownMin));
+});
+
+gulp.task('copyLibs', function() {
+    return gulp
+        .src(markdownRaw + '/res-min/libs/**/*')
+        .pipe(gulp.dest(markdownMin + '/res-min/libs/'));
+});
+
+// 合并css
+gulp.task('concatCss', function() {
+    return gulp
+        .src([markdownRaw + '/css/default.css', markdownRaw + '/css/md.css'])
+        .pipe(concat('all.css'))
+        .pipe(gulp.dest(markdownMin));
+});
+
+// 优化html, 替换css, js
+gulp.task('htmlMarkdown', function() {
+	var sources = gulp.src([markdownMin + '/all.js', markdownMin + '/all.css'], {read: false});
+
+    return gulp
+        .src(markdownRaw + '/editor-mobile.html')
+        .pipe(replace(/<textarea(\s|\S)+?<\/textarea>/g, ''))
+        .pipe(replace(/<div style="display: none">(\s|\S)+?<\/div>/g, '')) // 除去未例
+        .pipe(replace(/<link.+?\/>/g, '')) // 除去<link />
+        .pipe(replace(/<script.*>.*<\/script>/g, '')) // 除去<script></script>
+        .pipe(inject(sources, {relative: true}))
+        .pipe(replace(/leanote\-ios\//g, '')) // 是因为inject后, 是相对路径
+        .pipe(minifyHtml())
+        .pipe(rename({ suffix: '.min' }))
+        .pipe(gulp.dest(markdownMin));
+});
+
+gulp.task('concatMarkdown', ['concatJs', 'concatCss']);
+gulp.task('minify', ['concatMarkdown', 'htmlMarkdown', 'copyLibs']);

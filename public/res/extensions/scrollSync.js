@@ -5,6 +5,9 @@ define([
 	"text!html/scrollSyncSettingsBlock.html"
 ], function(_, Extension, scrollSyncSettingsBlockHTML) {
 
+    // life
+    return;
+
 	var scrollSync = new Extension("scrollSync", "Scroll Sync", true, true);
 	scrollSync.settingsBlock = scrollSyncSettingsBlockHTML;
 
@@ -249,7 +252,8 @@ define([
 		editor.getConverter().hooks.chain("postConversion", function(text) {
 			// To avoid losing scrolling position before elements are fully loaded
 			previousHeight = previewContentsElt.offsetHeight;
-			previewContentsElt.style.height = previousHeight + 'px';
+			// 这里啊, fuck, 导致preview有时显示的高度只有一点点!!
+			// previewContentsElt.style.height = previousHeight + 'px';
 			return text;
 		});
 	};

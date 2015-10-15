@@ -137,19 +137,6 @@ define([
             _.each(tocEltList, function(elt) {
                 elt.innerHTML = htmlToc;
             });
-
-            $("#leanoteNavContentMd").height("auto"); // auto
-            try {
-                if(!$(htmlToc).text()) {
-                    $("#leanoteNavContentMd").html("&nbsp; &nbsp; Nothing...");
-                }
-            } catch(e) {}
-            // 这里, resize Height
-            var curH = $("#leanoteNavContentMd").height();
-            var pH = $("#mdEditor").height()-100;
-            if(curH > pH) {
-                $("#leanoteNavContentMd").height(pH);
-            }
         });
     };
 

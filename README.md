@@ -1,77 +1,27 @@
-# Markdown Editor For Leanote
+# Markdown Editor for Leanote IOS
 
 ## 命令
 
-确保在此之前安装了node, gulp
 ```
-> gulp # 生成res-min/main.js (https://github.com/leanote/leanote/blob/master/public/dist/main.js)
-> gulp minify # 压缩main.js -> main.min.js (https://github.com/leanote/leanote/blob/master/public/dist/main.min.js)
+> gulp # 运行, 生成res-min/main.js
+> gulp minify # 将res-min的文件合并至leanote-ios
 ```
 
 ## 如何本地调试 ?
 
-```
-> node server.js
-```
+1. 访问
+public/editor-mobile-require.html
 
-访问: http://localhost:3000/editor.html
+2. 访问
+public/editor-mobile.html?debug
 
-![](screenshot.png)
+显示preview: LEAMD.togglePreview();
 
-## 主要文件
 
-* main.js 入口
-* editor.js [主要]
-* core.js [主要]
-* lib/Markdown.Editor.js [主要]
+## 目录
 
-## Leanote如何使用?
-将 `res-min/main.minjs` 复制到leanote的 `/public/dist/` 下
-
-node-dev.html:
-
-```html
-<script>
-initPage();
-// 当tinymce.dev.js时, 请注释require
-window.require = {
-    baseUrl: '/public',
-};
-</script>
-
-<!-- pro_markdown_js -->
-
-<!-- dev -->
-<script src="/js/require.js"></script>
-<script src="/public/dist/main.min.js"></script>
-<!-- /dev -->
-
-<script src="/public/js/plugins/main.js"></script>
-</body>
-```
-
-## Leanote 开发
-
-替换node-dev.html
-
-```html
-<script>
-initPage();
-window.require = {
-    baseUrl: '/public/res', // res指向源码
-};
-</script>
-
-<!-- pro_markdown_js -->
-
-<!-- dev -->
-<script src="/js/require.js"></script>
-<script src="/public/res/main.js"></script>
-<!-- /dev -->
-
-<!--
-不要
-<script src="/public/js/plugins/main.js"></script>
--->
-</body>
-```
+* res 源码
+* res-min 打包后调试, 对应 https://github.com/leanote/leanote-ios/tree/master/Leanote/editor/MarkdownAssetsRaw
+* leanote-ios IOS版正式, 对应 https://github.com/leanote/leanote-ios/tree/master/Leanote/editor/MarkdownAssets
+* editor-mobile-require.html 使用res/main.js
+* editor-mobile.html 使用res-min/main.js

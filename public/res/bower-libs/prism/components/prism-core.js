@@ -287,6 +287,7 @@ var Token = _.Token = function(type, content) {
 	this.content = content;
 };
 
+// 来到这里啦, stringify
 Token.stringify = function(o, language, parent) {
 	if (typeof o == 'string') {
 		return o;
@@ -319,8 +320,6 @@ Token.stringify = function(o, language, parent) {
 	for (var name in env.attributes) {
 		attributes += name + '="' + (env.attributes[name] || '') + '"';
 	}
-
-	return '<' + env.tag + ' class="' + env.classes.join(' ') + '" ' + attributes + '>' + env.content + '</' + env.tag + '>';
 	
     // 原来是这里啊 token lf
     if(env.content == "\n") {

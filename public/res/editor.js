@@ -1,3 +1,4 @@
+
 /* jshint -W084, -W099 */
 // Credit to http://dabblet.com/
 define([
@@ -182,6 +183,7 @@ define([
 			return range;
 		};
 		var adjustScroll;
+        var $body = $('body');
 		var debouncedUpdateCursorCoordinates = utils.debounce(function() {
 			$inputElt.toggleClass('has-selection', this.selectionStart !== this.selectionEnd);
 			var coordinates = this.getCoordinates(this.selectionEnd, this.selectionEndContainer, this.selectionEndOffset);
@@ -190,6 +192,28 @@ define([
 				eventMgr.onCursorCoordinates(coordinates.x, coordinates.y);
 			}
 			if(adjustScroll) {
+                this.cursorY = ZSSEditor.getCaretYPosition();
+				log('adjustScroll: ' + this.cursorY);
+				var _windowHeight = $(window).height();
+                var realWindowHeight;
+                if(_windowHeight < windowHeight && _windowHeight + 50 < windowHeight) {
+                    // 证明, realWindowHeight就是windowHeight
+                    // log('不可能会这样: ' + _windowHeight + ' ' + windowHeight);
+                    realWindowHeight = _windowHeight;
+                } else {
+                    // log('windowHeight: ' + windowHeight + ' keyboardHeight: ' + keyboardHeight);
+                    realWindowHeight = windowHeight - keyboardHeight;
+                }
+
+				var bodyScrollTop = $body.scrollTop();
+                // 1043.5 - 827 + 15 > 524 - 293 = 231
+                // 231.
+				if(this.cursorY - bodyScrollTop + 55 > realWindowHeight) {
+					// log('need re ' + (bodyScrollTop + 55 + this.cursorY - bodyScrollTop - realWindowHeight));
+					$body.scrollTop(bodyScrollTop + 55 + this.cursorY - bodyScrollTop - realWindowHeight);
+				}
+				return;
+				
 				var adjustTop, adjustBottom;
 				adjustTop = adjustBottom = inputElt.offsetHeight / 2 * settings.cursorFocusRatio;
 				adjustTop = this.adjustTop || adjustTop;
@@ -199,10 +223,15 @@ define([
 					var cursorMaxY = inputElt.scrollTop + inputElt.offsetHeight - adjustBottom;
 					if(selectionMgr.cursorY < cursorMinY) {
 						inputElt.scrollTop += selectionMgr.cursorY - cursorMinY;
+						// console.log(inputElt);
+						// $('body').scrollTop(-(selectionMgr.cursorY - cursorMinY));
+						console.log(selectionMgr.cursorY - cursorMinY);
 					}
 					else if(selectionMgr.cursorY > cursorMaxY) {
 						inputElt.scrollTop += selectionMgr.cursorY - cursorMaxY;
+						console.log('xx' + (selectionMgr.cursorY - cursorMaxY));
 					}
+					console.log('adjustScroll haha');
 				}
 			}
 			adjustScroll = false;
@@ -244,6 +273,9 @@ define([
 		};
 		this.saveSelectionState = (function() {
 			function save() {
+                // life 2
+                // return;
+                log('save saveSelectionState');
 				if(fileChanged === false) {
 					var selectionStart = self.selectionStart;
 					var selectionEnd = self.selectionEnd;
@@ -398,7 +430,11 @@ define([
 
 	var selectionMgr = new SelectionMgr();
 	editor.selectionMgr = selectionMgr;
-	$(document).on('selectionchange', '.editor-content', _.bind(selectionMgr.saveSelectionState, selectionMgr, true, false));
+    var __save =  _.bind(selectionMgr.saveSelectionState, selectionMgr, true, false);
+	$(document).on('selectionchange', '.editor-content', __save);
+    // life, 为了第三方输入法啊
+    $(document).on('input ', '.editor-content', function() {
+    });
 
 	function adjustCursorPosition(force) {
 		if(inputElt === undefined) {
@@ -463,6 +499,8 @@ define([
 	};
 
 	window.we = editor;
+	// 初始化之
+	editor.setContent("");
 
 	function replace(selectionStart, selectionEnd, replacement) {
 		undoMgr.currentMode = undoMgr.currentMode || 'replace';
@@ -909,6 +947,10 @@ define([
 					clearNewline = false;
 				}
 			})
+            .on('newline', function() {
+                action('newline');
+                selectionMgr.updateCursorCoordinates(true);
+            })
 			.on('compositionstart', function() {
 				isComposing++;
 			})
@@ -1148,11 +1190,13 @@ define([
 		});
 	}
 
+    // 这个没什么用
 	function addTrailingLfNode() {
 		trailingLfNode = crel('span', {
-			class: 'token lf'
+			class: 'token lf life'
 		});
 		trailingLfNode.textContent = '\n';
+        // $(contentElt).append('\n<span class="token lf"></span>');
 		contentElt.appendChild(trailingLfNode);
 	}
 
@@ -1177,6 +1221,7 @@ define([
 			// log("pre")
 			// log(text);
 			// # lif
+            // life 去掉这个, 可以享受光标不易定位的问题
 			text = Prism.highlight(text, Prism.languages.md);
 			// log('after');
 			// <span class="token h1" ><span class="token md md-hash" >#</span> lif</span>
@@ -1186,7 +1231,7 @@ define([
 		if(frontMatter.length) {
 			// Front matter highlighting
 			frontMatter = escape(frontMatter);
-			frontMatter = frontMatter.replace(/\n/g, '<span class="token lf">\n</span>');
+			frontMatter = frontMatter.replace(/\n/g, '<span class="token lf life2">\n</span>');
 			text = '<span class="token md">' + frontMatter + '</span>' + text;
 		}
 		var sectionElt = crel('span', {

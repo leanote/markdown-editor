@@ -32,21 +32,12 @@ define([
 		}
 	}
 
-	// Create the PageDown editor
-	var pagedownEditor;
-	var fileDesc;
-	var insertLinkO = $('<div class="modal fade modal-insert-link"><div class="modal-dialog"><div class="modal-content">'
-			+ '<div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>'
-			+ '<h4 class="modal-title">' + getMsg('Hyperlink') + '</h4></div>'
-			+ '<div class="modal-body"><p>' + getMsg('Please provide the link URL and an optional title') + ':</p>'
-			+ '<div class="input-group"><span class="input-group-addon"><i class="fa fa-link"></i></span><input id="input-insert-link" type="text" class="col-sm-5 form-control" placeholder="http://example.com  ' + getMsg('optional title') + '"></div></div><div class="modal-footer"><a href="#" class="btn btn-default" data-dismiss="modal">' + getMsg('Cancel') + '</a> <a href="#" class="btn btn-primary action-insert-link" data-dismiss="modal">' + getMsg('OK') + '</a></div></div></div></div>');
-
-	var actionInsertLinkO = insertLinkO.find('.action-insert-link');
-
-
 	// Load settings in settings dialog
 	// var $themeInputElt;
 
+	// Create the PageDown editor
+	var pagedownEditor;
+	var fileDesc;
 	core.initEditorFirst = function() {
 		// Create the converter and the editor
 		var converter = new Markdown.Converter();
@@ -75,7 +66,7 @@ define([
 		pagedownEditor.hooks.set("insertLinkDialog", function(callback) {
 			core.insertLinkCallback = callback;
 			utils.resetModalInputs();
-			insertLinkO.modal();
+			$(".modal-insert-link").modal();
 			return true;
 		});
 		// Custom insert image dialog
@@ -87,7 +78,7 @@ define([
 			utils.resetModalInputs();
 			var ifr = $("#leauiIfrForMD");
 			if(!ifr.attr('src')) {
-				ifr.attr('src', '/album/index?md=1');
+				ifr.attr('src', '/tinymce/plugins/leaui_image/index.html?md=1');
 			}
 
 			$(".modal-insert-image").modal();
@@ -194,33 +185,17 @@ define([
 		});
 
 		// Click events on "insert link" and "insert image" dialog buttons
-		actionInsertLinkO.click(function(e) {
+		$(".action-insert-link").click(function(e) {
 			var value = utils.getInputTextValue($("#input-insert-link"), e);
 			if(value !== undefined) {
-				var arr = value.split(' ');
-				var text = '';
-				var link = arr[0];
-				if (arr.length > 1) {
-					arr.shift();
-					text = $.trim(arr.join(' '));
-				}
-				core.insertLinkCallback(link, text);
+				core.insertLinkCallback(value);
 				core.insertLinkCallback = undefined;
 			}
 		});
-
 		// 插入图片
 		$(".action-insert-image").click(function() {
 			// 得到图片链接或图片
-			/*
-			https://github.com/leanote/leanote/issues/171
-			同遇到了网页编辑markdown时不能添加图片的问题。
-			可以上传图片，但是按下“插入图片”按钮之后，编辑器中没有加入![...](...)
-			我的控制台有这样的错误： TypeError: document.mdImageManager is undefined
-			*/
-			// mdImageManager是iframe的name, mdGetImgSrc是iframe内的全局方法
-			// var value = document.mdImageManager.mdGetImgSrc();
-			var value = document.getElementById('leauiIfrForMD').contentWindow.mdGetImgSrc();
+			var value = document.mdImageManager.mdGetImgSrc();
 			// var value = utils.getInputTextValue($("#input-insert-image"), e);
 			if(value) {
 				core.insertLinkCallback(value);
@@ -229,7 +204,7 @@ define([
 		});
 
 		// Hide events on "insert link" and "insert image" dialogs
-		insertLinkO.on('hidden.bs.modal', function() {
+		$(".modal-insert-link, .modal-insert-image").on('hidden.bs.modal', function() {
 			if(core.insertLinkCallback !== undefined) {
 				core.insertLinkCallback(null);
 				core.insertLinkCallback = undefined;
@@ -243,7 +218,7 @@ define([
 
 		// 弹框显示markdown语法
 		$('#wmd-help-button').click(function() {
-	        window.open("http://leanote.com/blog/post/531b263bdfeb2c0ea9000002");
+	        window.open("http://leanote.com/blog/view/531b263bdfeb2c0ea9000002");
 		});
 
 		// Load images

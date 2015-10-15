@@ -1,3 +1,4 @@
+
 // needs Markdown.Converter.js at the moment
 
 (function () {
@@ -18,40 +19,41 @@
         };
 
     var defaultsStrings = {
-        bold: getMsg("Strong") + ' <strong> Ctrl/Cmd+B',
-        boldexample: getMsg("strong text"),
+        bold: "Strong <strong> Ctrl/Cmd+B",
+        boldexample: "strong text",
 
-        italic: getMsg("Emphasis") + ' <em> Ctrl/Cmd+I',
-        italicexample: getMsg("emphasized text"),
+        italic: "Emphasis <em> Ctrl/Cmd+I",
+        italicexample: "emphasized text",
 
-        link: getMsg("Hyperlink") + ' <a> Ctrl/Cmd+L',
-        linkdescription: getMsg("enter link description here"),
+        link: "Hyperlink <a> Ctrl/Cmd+L",
+        linkdescription: "enter link description here",
         linkdialog: "<p><b>Insert Hyperlink</b></p><p>http://example.com/ \"optional title\"</p>",
 
-        quote: getMsg("Blockquote") + ' <blockquote> Ctrl/Cmd+Q',
-        quoteexample: getMsg("Blockquote"),
+        quote: "Blockquote <blockquote> Ctrl/Cmd+Q",
+        quoteexample: "Blockquote",
 
-        code: getMsg("Code Sample") + ' <pre><code> Ctrl/Cmd+K',
-        codeexample: getMsg("enter code here"),
+        code: "Code Sample <pre><code> Ctrl/Cmd+K",
+        codeexample: "enter code here",
 
-        image: getMsg("Image") + '<img> Ctrl/Cmd+G',
-        imagedescription: getMsg("enter image description here"),
+        image: "Image <img> Ctrl/Cmd+G",
+        imagedescription: "enter image description here",
         imagedialog: "<p><b>Insert Image</b></p><p>http://example.com/images/diagram.jpg \"optional title\"<br><br>Need <a href='http://www.google.com/search?q=free+image+hosting' target='_blank'>free image hosting?</a></p>",
 
-        olist: getMsg("Numbered List") +' <ol> Ctrl/Cmd+O',
-        ulist: getMsg("Bulleted List") +' <ul> Ctrl/Cmd+U',
-        litem: getMsg("List item"),
+        olist: "Numbered List <ol> Ctrl/Cmd+O",
+        ulist: "Bulleted List <ul> Ctrl/Cmd+U",
+        litem: "List item",
 
-        heading: getMsg("Heading") + ' <h1>/<h2> Ctrl/Cmd+H',
-        headingexample: getMsg("Heading"),
+        heading: "Heading <h1>/<h2> Ctrl/Cmd+H",
+        headingexample: "Heading",
 
-        hr: getMsg("Horizontal Rule") + ' <hr> Ctrl/Cmd+R',
+        hr: "Horizontal Rule <hr> Ctrl/Cmd+R",
 
-        undo: getMsg("Undo") + ' - Ctrl/Cmd+Z',
-        redo: getMsg("Redo") + ' - Ctrl/Cmd+Y',
+        undo: "Undo - Ctrl/Cmd+Z",
+        redo: "Redo - Ctrl/Cmd+Y",
 
         help: "Markdown Editing Help"
     };
+
 
     // -------------------------------------------------------------------
     //  YOUR CHANGES GO HERE
@@ -99,6 +101,8 @@
             options.strings.help = options.strings.help || options.helpButton.title;
         }
         var getString = function (identifier) { return options.strings[identifier] || defaultsStrings[identifier]; }
+        // life
+        MD.getString = getString;
 
         idPostfix = idPostfix || "";
 
@@ -123,6 +127,7 @@
 
             panels = new PanelCollection(idPostfix);
             var commandManager = new CommandManager(hooks, getString);
+            MD.commandManager = commandManager;
             var previewManager = new PreviewManager(markdownConverter, panels, function () { hooks.onPreviewRefresh(); });
             var uiManager;
 
@@ -738,10 +743,12 @@
 
             //if (inputArea.selectionStart !== undefined && !uaSniffed.isOpera) {
 
+                // ios7下stateObj.start == 0, ios 8, 9是好的
                 inputArea.focus();
+                // log('stateObj.start:' + stateObj.start);
                 inputArea.selectionStart = stateObj.start;
                 inputArea.selectionEnd = stateObj.end;
-	        /*
+            /*
                 inputArea.scrollTop = stateObj.scrollTop;
 
             }
@@ -815,7 +822,7 @@
                 inputArea.value = stateObj.text;
             }
             this.setInputAreaSelection();
-	        /*
+            /*
             setTimeout(function() {
                 inputArea.scrollTop = stateObj.scrollTop;
             }, 0);
@@ -1353,22 +1360,19 @@
         }
         */
        
-        // life 新添加函数
-        // life
-        // isImage 2015/3/1
-        function insertLinkLife(link, text, isImage) {
+       function lifeApiPre() {
             inputBox.focus();
             if (undoManager) {
                 undoManager.setCommandMode();
             }
 
             var state = new TextareaState(panels);
-
             if (!state) {
                 return;
             }
 
             var chunks = state.getChunks(); // 得到chunk
+            // log('state.getChunks(): ' + panels.input.selectionStart)
             var fixupInputArea = function () {
                 inputBox.focus();
 
@@ -1376,16 +1380,69 @@
                     state.setChunks(chunks);
                 }
 
+                // 这里state是什么?
                 state.restore();
                 previewManager.refresh();
             };
-
-            var a = commandProto.insertLink(chunks, fixupInputArea, link, text, isImage);
-            if(!a) fixupInputArea();
+            return [fixupInputArea, chunks];
+       }
+       
+        // life 新添加函数
+        // life
+        // isImage 2015/3/1
+        function insertLinkLife(link, text, isImage) {
+            // log('insert link');
+            var fixupInputAreaAndChunks = lifeApiPre();
+            if(!fixupInputAreaAndChunks) {
+                return;
+            }
+            var a = commandProto.insertLink(fixupInputAreaAndChunks[1], fixupInputAreaAndChunks[0], link, text, isImage);
+            if(!a) fixupInputAreaAndChunks[0]();
         }
        
         // life
         MD.insertLink = insertLinkLife;
+        MD.execCommand = function(cmdName) {
+            // life2
+            // log(' saveSelectionState first2233');
+            MD.selectionMgr.saveSelectionState();
+            var fixupInputAreaAndChunks = lifeApiPre();
+            if(!fixupInputAreaAndChunks) {
+                return;
+            }
+            var re;
+
+            switch (cmdName) {
+                case 'bold':
+                re = MD.commandManager.doBold(fixupInputAreaAndChunks[1], fixupInputAreaAndChunks[0]);
+                break;
+                case 'italic':
+                re = MD.commandManager.doItalic(fixupInputAreaAndChunks[1], fixupInputAreaAndChunks[0]);
+                break;
+                case 'numberList':
+                re = MD.commandManager.doList(fixupInputAreaAndChunks[1], fixupInputAreaAndChunks[0], true);
+                break;
+                case 'list':
+                re = MD.commandManager.doList(fixupInputAreaAndChunks[1], fixupInputAreaAndChunks[0], false);
+                break;
+                case 'code':
+                re = MD.commandManager.doCode(fixupInputAreaAndChunks[1], fixupInputAreaAndChunks[0]);
+                break;
+                case 'blockquote':
+                re = MD.commandManager.doBlockquote(fixupInputAreaAndChunks[1], fixupInputAreaAndChunks[0]);
+                break;
+                case 'heading':
+                re = MD.commandManager.doHeading(fixupInputAreaAndChunks[1], fixupInputAreaAndChunks[0]);
+                break;
+                case 'hr':
+                re = MD.commandManager.doHorizontalRule(fixupInputAreaAndChunks[1], fixupInputAreaAndChunks[0]);
+                break;
+                case 'blank':
+                re = false; // MD.commandManager.doBlank(fixupInputAreaAndChunks[1], fixupInputAreaAndChunks[0]);
+                break;
+            }
+            if(!re) fixupInputAreaAndChunks[0]();
+        }
 
         // Perform the button's action.
         function doClick(button) {
@@ -1441,8 +1498,8 @@
                 if (!noCleanup) {
                     fixupInputArea();
                     if(!linkOrImage) {
-	                    inputBox.adjustCursorPosition();
-	                    //inputBox.dispatchEvent(new Event('keydown'));
+                        inputBox.adjustCursorPosition();
+                        //inputBox.dispatchEvent(new Event('keydown'));
                     }
                 }
 
@@ -1791,7 +1848,7 @@
             this.addLinkDef(chunk, null);
         }
         else {
-
+            
             // We're moving start and end tag back into the selection, since (as we're in the else block) we're not
             // *removing* a link, but *adding* one, so whatever findTags() found is now back to being part of the
             // link text. linkEnteredCallback takes care of escaping any brackets.
@@ -1805,17 +1862,38 @@
             var that = this;
             // The function to be executed when you enter a link and press OK or Cancel.
             // Marks up the link and adds the ref.
-            var linkEnteredCallback = function (link) {
+            var linkEnteredCallback = function (links) {
                 background.parentNode.removeChild(background);
+                if(typeof links == 'string') {
+                    links = [links];
+                }
 
-                if (link !== null) {
-                    chunk.selection = (" " + chunk.selection).replace(/([^\\](?:\\\\)*)(?=[[\]])/g, "$1\\").substr(1);
+                if(!text) {
+                    text = 'title';
+                }
+                if(links.length == 1) {
+                    var link = links[0];
+                    if (link) {
+                        chunk.selection = (" " + chunk.selection).replace(/([^\\](?:\\\\)*)(?=[[\]])/g, "$1\\").substr(1);
 
-                    chunk.startTag = isImage ? "![" : "[";
-                    //chunk.endTag = "][" + num + "]";
-                    chunk.endTag = "](" + properlyEncoded(link) + ")";
+                        chunk.startTag = isImage ? "![" : "[";
+                        //chunk.endTag = "][" + num + "]";
+                        chunk.endTag = "](" + properlyEncoded(link) + ")";
 
-                    chunk.selection = text;
+                        chunk.selection = text;
+                    }
+                }
+                else {
+                    chunk.selection = '';
+                    chunk.startTag = '';
+                    chunk.endTag = '';
+                    for(var i = 0; i < links.length; ++i) {
+                        var link = links[i];
+                        if (!link) {
+                            continue;
+                        }
+                        chunk.startTag += (isImage ? "![" : "[") + text + '](' + properlyEncoded(link) + ")\n";
+                    }
                 }
                 postProcessing();
             };
@@ -1856,7 +1934,8 @@
             var that = this;
             // The function to be executed when you enter a link and press OK or Cancel.
             // Marks up the link and adds the ref.
-            var linkEnteredCallback = function (link, text) {
+            var linkEnteredCallback = function (link) {
+
                 background.parentNode.removeChild(background);
 
                 if (link !== null) {
@@ -1886,21 +1965,16 @@
                     var num = that.addLinkDef(chunk, linkDef);
                     */
                     chunk.startTag = isImage ? "![" : "[";
-                    // chunk.endTag = "][" + num + "]";
+                    //chunk.endTag = "][" + num + "]";
                     chunk.endTag = "](" + properlyEncoded(link) + ")";
 
                     if (!chunk.selection) {
-                        var str = '';
-                        if (text) {
-                            str = text;
-                        } else if (isImage) {
-                            str = that.getString("imagedescription");
+                        if (isImage) {
+                            chunk.selection = that.getString("imagedescription");
                         }
                         else {
-                            str = that.getString("linkdescription");
+                            chunk.selection = that.getString("linkdescription");
                         }
-
-                        chunk.selection = str;
                     }
                 }
                 postProcessing();
@@ -1915,7 +1989,7 @@
             }
             else {
                 if (!this.hooks.insertLinkDialog(linkEnteredCallback))
-                	ui.prompt(this.getString("linkdialog"), linkDefaultText, linkEnteredCallback);
+                    ui.prompt(this.getString("linkdialog"), linkDefaultText, linkEnteredCallback);
             }
             return true;
         }
@@ -2110,7 +2184,6 @@
         }
     };
 
-    // 这里, 应该用 ``` ```
     commandProto.doCode = function (chunk, postProcessing) {
 
         var hasTextBefore = /\S[ ]*$/.test(chunk.before);
@@ -2340,5 +2413,6 @@
         chunk.selection = "";
         chunk.skipLines(1, 1, true);
     }
+   
 
 })();
