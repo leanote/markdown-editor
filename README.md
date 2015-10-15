@@ -27,18 +27,18 @@ See: http://localhost:3000/editor.html
 
 ![](screenshot.png)
 
-## Main files
+## Main Files
 
 * main.js [Entry]
 * editor.js [Main]
 * core.js [Core]
 * lib/Markdown.Editor.js [Markdown Core]
 
-## How to used by Leanote
+## Integrated With Leanote
 
-Copy `res-min/main.minjs` to leanote's path `/public/dist/`
+Copy `res-min/main.min.js` to leanote's path `/public/dist/`.
 
-node-dev.html:
+Update node-dev.html with:
 
 ```html
 <script>
@@ -111,9 +111,9 @@ window.require = {
 * core.js [主要]
 * lib/Markdown.Editor.js [主要]
 
-## Leanote使用Markdown编辑器
+## Leanote 使用 Markdown 编辑器
 
-将 `res-min/main.minjs` 复制到leanote的 `/public/dist/` 下
+将 `res-min/main.min.js` 复制到leanote的 `/public/dist/` 下
 
 node-dev.html:
 
@@ -137,7 +137,7 @@ window.require = {
 </body>
 ```
 
-## Leanote调试Markdown编辑器的源码
+## Leanote 调试 Markdown 编辑器的源码
 
 替换node-dev.html
 
