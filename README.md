@@ -26,7 +26,7 @@
 * lib/Markdown.Editor.js [主要]
 
 ## Leanote如何使用?
-将res-min/main.js复制到leanote的/public/dist/ 下
+将 `res-min/main.minjs` 复制到leanote的 `/public/dist/` 下
 
 node-dev.html:
 
@@ -74,3 +74,4 @@ window.require = {
 <script src="/public/js/plugins/main.js"></script>
 -->
 </body>
+```
