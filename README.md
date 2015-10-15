@@ -1,5 +1,11 @@
 # Markdown Editor For Leanote
 
+## Branches
+
+* [master](https://github.com/leanote/desktop-app) markdown editor for https://github.com/leanote/leanote
+* [desktop-app](https://github.com/leanote/markdown-editor/tree/desktop-app) markdown editor for https://github.com/leanote/desktop-app
+* [ios](https://github.com/leanote/markdown-editor/tree/ios) markdown editor for https://github.com/leanote/desktop-ios
+
 ## 命令
 
 确保在此之前安装了node, gulp
@@ -8,7 +14,7 @@
 > gulp minify # 压缩main.js -> main.min.js (https://github.com/leanote/leanote/blob/master/public/dist/main.min.js)
 ```
 
-## 如何本地调试 ?
+## 本地调试
 
 ```
 > node server.js
@@ -25,7 +31,7 @@
 * core.js [主要]
 * lib/Markdown.Editor.js [主要]
 
-## Leanote如何使用?
+## Leanote 使用
 将 `res-min/main.minjs` 复制到leanote的 `/public/dist/` 下
 
 node-dev.html:
@@ -50,7 +56,7 @@ window.require = {
 </body>
 ```
 
-## Leanote 开发
+## Leanote 开发调试
 
 替换node-dev.html
 
