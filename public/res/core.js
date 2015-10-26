@@ -38,6 +38,15 @@ define([
 	// Create the PageDown editor
 	var pagedownEditor;
 	var fileDesc;
+
+	var insertLinkO = $('<div class="modal fade modal-insert-link"><div class="modal-dialog"><div class="modal-content">'
+			+ '<div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>'
+			+ '<h4 class="modal-title">' + getMsg('Hyperlink') + '</h4></div>'
+			+ '<div class="modal-body"><p>' + getMsg('Please provide the link URL and an optional title') + ':</p>'
+			+ '<div class="input-group"><span class="input-group-addon"><i class="fa fa-link"></i></span><input id="input-insert-link" type="text" class="col-sm-5 form-control" placeholder="http://example.com  ' + getMsg('optional title') + '"></div></div><div class="modal-footer"><a href="#" class="btn btn-default" data-dismiss="modal">' + getMsg('Cancel') + '</a> <a href="#" class="btn btn-primary action-insert-link" data-dismiss="modal">' + getMsg('OK') + '</a></div></div></div></div>');
+
+	var actionInsertLinkO = insertLinkO.find('.action-insert-link');
+
 	core.initEditorFirst = function() {
 		// Create the converter and the editor
 		var converter = new Markdown.Converter();
@@ -66,7 +75,7 @@ define([
 		pagedownEditor.hooks.set("insertLinkDialog", function(callback) {
 			core.insertLinkCallback = callback;
 			utils.resetModalInputs();
-			$(".modal-insert-link").modal();
+			insertLinkO.modal();
 			return true;
 		});
 		// Custom insert image dialog
@@ -177,13 +186,21 @@ define([
 		});
 
 		// Click events on "insert link" and "insert image" dialog buttons
-		$(".action-insert-link").click(function(e) {
+		actionInsertLinkO.click(function(e) {
 			var value = utils.getInputTextValue($("#input-insert-link"), e);
 			if(value !== undefined) {
-				core.insertLinkCallback(value);
+				var arr = value.split(' ');
+				var text = '';
+				var link = arr[0];
+				if (arr.length > 1) {
+					arr.shift();
+					text = $.trim(arr.join(' '));
+				}
+				core.insertLinkCallback(link, text);
 				core.insertLinkCallback = undefined;
 			}
 		});
+
 		// 插入图片
         /*
 		$(".action-insert-image").click(function() {
