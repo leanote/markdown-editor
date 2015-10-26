@@ -246,7 +246,12 @@ define(['module'], function (module) {
             !!process.versions.node &&
             !process.versions['node-webkit'])) {
         //Using special require.nodeRequire, something added by r.js.
-        fs = require.nodeRequire('fs');
+
+        var fs;
+        if (nodeRequire && require.nodeRequire && typeof require.nodeRequire == 'function') {
+            fs = require.nodeRequire('fs');
+        }
+        // var fs = {};
 
         text.get = function (url, callback, errback) {
             try {

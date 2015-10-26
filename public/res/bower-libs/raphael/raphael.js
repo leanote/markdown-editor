@@ -375,6 +375,11 @@
     eve.toString = function () {
         return "You are running Eve " + version;
     };
+
+    // life, atom环境不一样
+    define("eve", [], function() { return eve; });
+    return;
+    
     (typeof module != "undefined" && module.exports) ? (module.exports = eve) : (typeof define != "undefined" ? (define("eve", [], function() { return eve; })) : (glob.eve = eve));
 })(this);
 // ┌─────────────────────────────────────────────────────────────────────┐ \\
@@ -7154,7 +7159,7 @@
         bites = /([clmz]),?([^clmz]*)/gi,
         blurregexp = / progid:\S+Blur\([^\)]+\)/g,
         val = /-?[^,\s-]+/g,
-        cssDot = "position:absolute;left:0;top:0;width:1px;height:1px",
+        cssDot = "position:absolute;left:0;top:0;width:0px;height:0px",
         zoom = 21600,
         pathTypes = {path: 1, rect: 1, image: 1},
         ovalTypes = {circle: 1, ellipse: 1},

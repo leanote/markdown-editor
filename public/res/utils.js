@@ -5,7 +5,7 @@ define([
 	"crel",
 	"xregexp",
 	"stacktrace",
-	"FileSaver"
+	// "FileSaver"
 ], function( _, storage, crel, XRegExp, printStackTrace, saveAs) {
 
 	var utils = {};

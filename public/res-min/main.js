@@ -9346,251 +9346,6 @@ return XRegExp;
     return printStackTrace;
 }));
 
-/* FileSaver.js
- * A saveAs() FileSaver implementation.
- * 2014-12-17
- *
- * By Eli Grey, http://eligrey.com
- * License: X11/MIT
- *   See https://github.com/eligrey/FileSaver.js/blob/master/LICENSE.md
- */
-
-/*global self */
-/*jslint bitwise: true, indent: 4, laxbreak: true, laxcomma: true, smarttabs: true, plusplus: true */
-
-/*! @source http://purl.eligrey.com/github/FileSaver.js/blob/master/FileSaver.js */
-
-var saveAs = saveAs
-  // IE 10+ (native saveAs)
-  || (typeof navigator !== "undefined" &&
-      navigator.msSaveOrOpenBlob && navigator.msSaveOrOpenBlob.bind(navigator))
-  // Everyone else
-  || (function(view) {
-	
-	// IE <10 is explicitly unsupported
-	if (typeof navigator !== "undefined" &&
-	    /MSIE [1-9]\./.test(navigator.userAgent)) {
-		return;
-	}
-	var
-		  doc = view.document
-		  // only get URL when necessary in case Blob.js hasn't overridden it yet
-		, get_URL = function() {
-			return view.URL || view.webkitURL || view;
-		}
-		, save_link = doc.createElementNS("http://www.w3.org/1999/xhtml", "a")
-		, can_use_save_link = "download" in save_link
-		, click = function(node) {
-			var event = doc.createEvent("MouseEvents");
-			event.initMouseEvent(
-				"click", true, false, view, 0, 0, 0, 0, 0
-				, false, false, false, false, 0, null
-			);
-			node.dispatchEvent(event);
-		}
-		, webkit_req_fs = view.webkitRequestFileSystem
-		, req_fs = view.requestFileSystem || webkit_req_fs || view.mozRequestFileSystem
-		, throw_outside = function(ex) {
-			(view.setImmediate || view.setTimeout)(function() {
-				throw ex;
-			}, 0);
-		}
-		, force_saveable_type = "application/octet-stream"
-		, fs_min_size = 0
-		// See https://code.google.com/p/chromium/issues/detail?id=375297#c7 and
-		// https://github.com/eligrey/FileSaver.js/commit/485930a#commitcomment-8768047
-		// for the reasoning behind the timeout and revocation flow
-		, arbitrary_revoke_timeout = 500 // in ms
-		, revoke = function(file) {
-			var revoker = function() {
-				if (typeof file === "string") { // file is an object URL
-					get_URL().revokeObjectURL(file);
-				} else { // file is a File
-					file.remove();
-				}
-			};
-			if (view.chrome) {
-				revoker();
-			} else {
-				setTimeout(revoker, arbitrary_revoke_timeout);
-			}
-		}
-		, dispatch = function(filesaver, event_types, event) {
-			event_types = [].concat(event_types);
-			var i = event_types.length;
-			while (i--) {
-				var listener = filesaver["on" + event_types[i]];
-				if (typeof listener === "function") {
-					try {
-						listener.call(filesaver, event || filesaver);
-					} catch (ex) {
-						throw_outside(ex);
-					}
-				}
-			}
-		}
-		, FileSaver = function(blob, name) {
-			// First try a.download, then web filesystem, then object URLs
-			var
-				  filesaver = this
-				, type = blob.type
-				, blob_changed = false
-				, object_url
-				, target_view
-				, dispatch_all = function() {
-					dispatch(filesaver, "writestart progress write writeend".split(" "));
-				}
-				// on any filesys errors revert to saving with object URLs
-				, fs_error = function() {
-					// don't create more object URLs than needed
-					if (blob_changed || !object_url) {
-						object_url = get_URL().createObjectURL(blob);
-					}
-					if (target_view) {
-						target_view.location.href = object_url;
-					} else {
-						var new_tab = view.open(object_url, "_blank");
-						if (new_tab == undefined && typeof safari !== "undefined") {
-							//Apple do not allow window.open, see http://bit.ly/1kZffRI
-							view.location.href = object_url
-						}
-					}
-					filesaver.readyState = filesaver.DONE;
-					dispatch_all();
-					revoke(object_url);
-				}
-				, abortable = function(func) {
-					return function() {
-						if (filesaver.readyState !== filesaver.DONE) {
-							return func.apply(this, arguments);
-						}
-					};
-				}
-				, create_if_not_found = {create: true, exclusive: false}
-				, slice
-			;
-			filesaver.readyState = filesaver.INIT;
-			if (!name) {
-				name = "download";
-			}
-			if (can_use_save_link) {
-				object_url = get_URL().createObjectURL(blob);
-				save_link.href = object_url;
-				save_link.download = name;
-				click(save_link);
-				filesaver.readyState = filesaver.DONE;
-				dispatch_all();
-				revoke(object_url);
-				return;
-			}
-			// Object and web filesystem URLs have a problem saving in Google Chrome when
-			// viewed in a tab, so I force save with application/octet-stream
-			// http://code.google.com/p/chromium/issues/detail?id=91158
-			// Update: Google errantly closed 91158, I submitted it again:
-			// https://code.google.com/p/chromium/issues/detail?id=389642
-			if (view.chrome && type && type !== force_saveable_type) {
-				slice = blob.slice || blob.webkitSlice;
-				blob = slice.call(blob, 0, blob.size, force_saveable_type);
-				blob_changed = true;
-			}
-			// Since I can't be sure that the guessed media type will trigger a download
-			// in WebKit, I append .download to the filename.
-			// https://bugs.webkit.org/show_bug.cgi?id=65440
-			if (webkit_req_fs && name !== "download") {
-				name += ".download";
-			}
-			if (type === force_saveable_type || webkit_req_fs) {
-				target_view = view;
-			}
-			if (!req_fs) {
-				fs_error();
-				return;
-			}
-			fs_min_size += blob.size;
-			req_fs(view.TEMPORARY, fs_min_size, abortable(function(fs) {
-				fs.root.getDirectory("saved", create_if_not_found, abortable(function(dir) {
-					var save = function() {
-						dir.getFile(name, create_if_not_found, abortable(function(file) {
-							file.createWriter(abortable(function(writer) {
-								writer.onwriteend = function(event) {
-									target_view.location.href = file.toURL();
-									filesaver.readyState = filesaver.DONE;
-									dispatch(filesaver, "writeend", event);
-									revoke(file);
-								};
-								writer.onerror = function() {
-									var error = writer.error;
-									if (error.code !== error.ABORT_ERR) {
-										fs_error();
-									}
-								};
-								"writestart progress write abort".split(" ").forEach(function(event) {
-									writer["on" + event] = filesaver["on" + event];
-								});
-								writer.write(blob);
-								filesaver.abort = function() {
-									writer.abort();
-									filesaver.readyState = filesaver.DONE;
-								};
-								filesaver.readyState = filesaver.WRITING;
-							}), fs_error);
-						}), fs_error);
-					};
-					dir.getFile(name, {create: false}, abortable(function(file) {
-						// delete file if it already exists
-						file.remove();
-						save();
-					}), abortable(function(ex) {
-						if (ex.code === ex.NOT_FOUND_ERR) {
-							save();
-						} else {
-							fs_error();
-						}
-					}));
-				}), fs_error);
-			}), fs_error);
-		}
-		, FS_proto = FileSaver.prototype
-		, saveAs = function(blob, name) {
-			return new FileSaver(blob, name);
-		}
-	;
-	FS_proto.abort = function() {
-		var filesaver = this;
-		filesaver.readyState = filesaver.DONE;
-		dispatch(filesaver, "abort");
-	};
-	FS_proto.readyState = FS_proto.INIT = 0;
-	FS_proto.WRITING = 1;
-	FS_proto.DONE = 2;
-
-	FS_proto.error =
-	FS_proto.onwritestart =
-	FS_proto.onprogress =
-	FS_proto.onwrite =
-	FS_proto.onabort =
-	FS_proto.onerror =
-	FS_proto.onwriteend =
-		null;
-
-	return saveAs;
-}(
-	   typeof self !== "undefined" && self
-	|| typeof window !== "undefined" && window
-	|| this.content
-));
-// `self` is undefined in Firefox for Android content script context
-// while `this` is nsIContentFrameMessageManager
-// with an attribute `content` that corresponds to the window
-
-if (typeof module !== "undefined" && module.exports) {
-  module.exports = saveAs;
-} else if ((typeof define !== "undefined" && define !== null) && (define.amd != null)) {
-  define('FileSaver',[], function() {
-    return saveAs;
-  });
-}
-;
 define('utils',[
 	// "jquery",
 	"underscore",
@@ -9598,7 +9353,7 @@ define('utils',[
 	"crel",
 	"xregexp",
 	"stacktrace",
-	"FileSaver"
+	// "FileSaver"
 ], function( _, storage, crel, XRegExp, printStackTrace, saveAs) {
 
 	var utils = {};
@@ -14144,7 +13899,12 @@ define('text',['module'], function (module) {
             !!process.versions.node &&
             !process.versions['node-webkit'])) {
         //Using special require.nodeRequire, something added by r.js.
-        fs = require.nodeRequire('fs');
+
+        var fs;
+        if (nodeRequire && require.nodeRequire && typeof require.nodeRequire == 'function') {
+            fs = require.nodeRequire('fs');
+        }
+        // var fs = {};
 
         text.get = function (url, callback, errback) {
             try {
@@ -19986,6 +19746,11 @@ define('text!html/umlDiagramsSettingsBlock.html',[],function () { return '<p>Cre
     eve.toString = function () {
         return "You are running Eve " + version;
     };
+
+    // life, atom环境不一样
+    define("eve", [], function() { return eve; });
+    return;
+    
     (typeof module != "undefined" && module.exports) ? (module.exports = eve) : (typeof define != "undefined" ? (define("eve", [], function() { return eve; })) : (glob.eve = eve));
 })(this);
 // ┌─────────────────────────────────────────────────────────────────────┐ \\
@@ -26765,7 +26530,7 @@ define('text!html/umlDiagramsSettingsBlock.html',[],function () { return '<p>Cre
         bites = /([clmz]),?([^clmz]*)/gi,
         blurregexp = / progid:\S+Blur\([^\)]+\)/g,
         val = /-?[^,\s-]+/g,
-        cssDot = "position:absolute;left:0;top:0;width:1px;height:1px",
+        cssDot = "position:absolute;left:0;top:0;width:0px;height:0px",
         zoom = 21600,
         pathTypes = {path: 1, rect: 1, image: 1},
         ovalTypes = {circle: 1, ellipse: 1},
@@ -31248,6 +31013,7 @@ var Token = _.Token = function(type, content) {
 	this.content = content;
 };
 
+// 来到这里啦, stringify
 Token.stringify = function(o, language, parent) {
 	if (typeof o == 'string') {
 		return o;
@@ -31280,21 +31046,8 @@ Token.stringify = function(o, language, parent) {
 	for (var name in env.attributes) {
 		attributes += name + '="' + (env.attributes[name] || '') + '"';
 	}
-
-	return '<' + env.tag + ' class="' + env.classes.join(' ') + '" ' + attributes + '>' + env.content + '</' + env.tag + '>';
 	
-    // 原来是这里啊 token lf
-    if(env.content == "\n") {
-    	// return '\n<' + env.tag + ' class="hehe ' + env.classes.join(' ') + '" ' + attributes + '></' + env.tag + '>';
-        return "\n";
-    }
-    var classes = env.classes.join(' ');
-    // 将span替换成p, 好让ios知道这是另一行
-    if(classes.indexOf('p') != -1) {
-        env.tag = 'p';
-    }
-    return '<' + env.tag + ' class="hehe ' + env.classes.join(' ') + '" ' + attributes + '>' + env.content + '</' + env.tag + '>';
-	
+    return '<' + env.tag + ' class="' + env.classes.join(' ') + '" ' + attributes + '>' + env.content + '</' + env.tag + '>';
 };
 
 if (!self.document) {
@@ -35764,6 +35517,7 @@ Prism.languages.md = (function() {
 
 define("libs/prism-markdown", function(){});
 
+
 /* jshint -W084, -W099 */
 // Credit to http://dabblet.com/
 define('editor',[
@@ -35792,7 +35546,6 @@ define('editor',[
 	var pagedownEditor;
 	var trailingLfNode;
 
-	// 这里, 加载预览
 	var refreshPreviewLater = (function() {
 		var elapsedTime = 0;
 		var timeoutId;
@@ -35939,7 +35692,9 @@ define('editor',[
 			}
 			offsetList = this.findOffsets(offsetList);
 			var startOffset = _.isObject(start) ? start : offsetList[startIndex];
-			range.setStart(startOffset.container, startOffset.offsetInContainer);
+            try {
+    			range.setStart(startOffset.container, startOffset.offsetInContainer);
+            } catch(e) {};
 			var endOffset = startOffset;
 			if(end && end != start) {
 				endOffset = _.isObject(end) ? end : offsetList[endIndex];
@@ -36595,8 +36350,9 @@ define('editor',[
 		});
 
 		// See https://gist.github.com/shimondoodkin/1081133
+        // life 之前插入到html中, 现在插入到body中, 且width, height = 0
 		if(/AppleWebKit\/([\d.]+)/.exec(navigator.userAgent)) {
-			var $editableFix = $('<input style="width:1px;height:1px;border:none;margin:0;padding:0;" tabIndex="-1">').appendTo('html');
+			var $editableFix = $('<input style="width:0px;height:0px;border:none;margin:0;padding:0;" tabIndex="-1">').appendTo('body');
 			$contentElt.blur(function() {
 				$editableFix[0].setSelectionRange(0, 0);
 				$editableFix.blur();
@@ -36642,6 +36398,7 @@ define('editor',[
 		});
 
 		var clearNewline = false;
+        var everPaste;
 		$contentElt
 			.on('keydown', function(evt) {
 				if(
@@ -36685,6 +36442,15 @@ define('editor',[
 			})
 			.on('mouseup', _.bind(selectionMgr.saveSelectionState, selectionMgr, true, false))
 			.on('paste', function(evt) {
+
+                // 为了解决linux下重复粘贴的问题
+                var now = (new Date()).getTime();
+                if (everPaste && now - everPaste < 100) {
+                    evt.preventDefault();
+                    return;
+                }
+                everPaste = now;
+
 				undoMgr.currentMode = 'paste';
 				evt.preventDefault();
 				var data, clipboardData = (evt.originalEvent || evt).clipboardData;
@@ -39349,21 +39115,12 @@ define('core',[
 		}
 	}
 
-	// Create the PageDown editor
-	var pagedownEditor;
-	var fileDesc;
-	var insertLinkO = $('<div class="modal fade modal-insert-link"><div class="modal-dialog"><div class="modal-content">'
-			+ '<div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>'
-			+ '<h4 class="modal-title">' + getMsg('Hyperlink') + '</h4></div>'
-			+ '<div class="modal-body"><p>' + getMsg('Please provide the link URL and an optional title') + ':</p>'
-			+ '<div class="input-group"><span class="input-group-addon"><i class="fa fa-link"></i></span><input id="input-insert-link" type="text" class="col-sm-5 form-control" placeholder="http://example.com  ' + getMsg('optional title') + '"></div></div><div class="modal-footer"><a href="#" class="btn btn-default" data-dismiss="modal">' + getMsg('Cancel') + '</a> <a href="#" class="btn btn-primary action-insert-link" data-dismiss="modal">' + getMsg('OK') + '</a></div></div></div></div>');
-
-	var actionInsertLinkO = insertLinkO.find('.action-insert-link');
-
-
 	// Load settings in settings dialog
 	// var $themeInputElt;
 
+	// Create the PageDown editor
+	var pagedownEditor;
+	var fileDesc;
 	core.initEditorFirst = function() {
 		// Create the converter and the editor
 		var converter = new Markdown.Converter();
@@ -39392,23 +39149,15 @@ define('core',[
 		pagedownEditor.hooks.set("insertLinkDialog", function(callback) {
 			core.insertLinkCallback = callback;
 			utils.resetModalInputs();
-			insertLinkO.modal();
+			$(".modal-insert-link").modal();
 			return true;
 		});
 		// Custom insert image dialog
 		pagedownEditor.hooks.set("insertImageDialog", function(callback) {
-			core.insertLinkCallback = callback;
-			if(core.catchModal) {
-				return true;
-			}
-			utils.resetModalInputs();
-			var ifr = $("#leauiIfrForMD");
-			if(!ifr.attr('src')) {
-				ifr.attr('src', '/album/index?md=1');
-			}
-
-			$(".modal-insert-image").modal();
-			return true;
+            // life, atom
+            insertLocalImage();
+            // 上传图片
+            return;
 		});
 
 		eventMgr.onPagedownConfigure(pagedownEditor);
@@ -39511,42 +39260,28 @@ define('core',[
 		});
 
 		// Click events on "insert link" and "insert image" dialog buttons
-		actionInsertLinkO.click(function(e) {
+		$(".action-insert-link").click(function(e) {
 			var value = utils.getInputTextValue($("#input-insert-link"), e);
 			if(value !== undefined) {
-				var arr = value.split(' ');
-				var text = '';
-				var link = arr[0];
-				if (arr.length > 1) {
-					arr.shift();
-					text = $.trim(arr.join(' '));
-				}
-				core.insertLinkCallback(link, text);
+				core.insertLinkCallback(value);
 				core.insertLinkCallback = undefined;
 			}
 		});
-
 		// 插入图片
+        /*
 		$(".action-insert-image").click(function() {
 			// 得到图片链接或图片
-			/*
-			https://github.com/leanote/leanote/issues/171
-			同遇到了网页编辑markdown时不能添加图片的问题。
-			可以上传图片，但是按下“插入图片”按钮之后，编辑器中没有加入![...](...)
-			我的控制台有这样的错误： TypeError: document.mdImageManager is undefined
-			*/
-			// mdImageManager是iframe的name, mdGetImgSrc是iframe内的全局方法
-			// var value = document.mdImageManager.mdGetImgSrc();
-			var value = document.getElementById('leauiIfrForMD').contentWindow.mdGetImgSrc();
+			var value = document.mdImageManager.mdGetImgSrc();
 			// var value = utils.getInputTextValue($("#input-insert-image"), e);
 			if(value) {
 				core.insertLinkCallback(value);
 				core.insertLinkCallback = undefined;
 			}
 		});
+        */
 
 		// Hide events on "insert link" and "insert image" dialogs
-		insertLinkO.on('hidden.bs.modal', function() {
+		$(".modal-insert-link, .modal-insert-image").on('hidden.bs.modal', function() {
 			if(core.insertLinkCallback !== undefined) {
 				core.insertLinkCallback(null);
 				core.insertLinkCallback = undefined;
@@ -39560,7 +39295,10 @@ define('core',[
 
 		// 弹框显示markdown语法
 		$('#wmd-help-button').click(function() {
-	        window.open("http://leanote.com/blog/post/531b263bdfeb2c0ea9000002");
+            // life
+            var url = 'http://leanote.com/blog/post/531b263bdfeb2c0ea9000002';
+            openExternal(url);
+	        // window.open("http://leanote.com/blog/view/531b263bdfeb2c0ea9000002");
 		});
 
 		// Load images
@@ -40490,7 +40228,7 @@ requirejs.config({
 		'mousetrap-record': 'bower-libs/mousetrap/plugins/record/mousetrap-record',
 		toMarkdown: 'bower-libs/to-markdown/src/to-markdown',
 		text: 'bower-libs/requirejs-text/text',
-		mathjax: 'libs/MathJax/MathJax.js?config=TeX-AMS_HTML',
+		mathjax: 'public/libs/MathJax/MathJax.js?config=TeX-AMS_HTML',
 		bootstrap: 'bower-libs/bootstrap/dist/js/bootstrap',
 		requirejs: 'bower-libs/requirejs/require',
 		'google-code-prettify': 'bower-libs/google-code-prettify/src/prettify',

@@ -1,3 +1,4 @@
+
 /* jshint -W084, -W099 */
 // Credit to http://dabblet.com/
 define([
@@ -26,7 +27,6 @@ define([
 	var pagedownEditor;
 	var trailingLfNode;
 
-	// 这里, 加载预览
 	var refreshPreviewLater = (function() {
 		var elapsedTime = 0;
 		var timeoutId;
@@ -173,7 +173,9 @@ define([
 			}
 			offsetList = this.findOffsets(offsetList);
 			var startOffset = _.isObject(start) ? start : offsetList[startIndex];
-			range.setStart(startOffset.container, startOffset.offsetInContainer);
+            try {
+    			range.setStart(startOffset.container, startOffset.offsetInContainer);
+            } catch(e) {};
 			var endOffset = startOffset;
 			if(end && end != start) {
 				endOffset = _.isObject(end) ? end : offsetList[endIndex];
@@ -829,8 +831,9 @@ define([
 		});
 
 		// See https://gist.github.com/shimondoodkin/1081133
+        // life 之前插入到html中, 现在插入到body中, 且width, height = 0
 		if(/AppleWebKit\/([\d.]+)/.exec(navigator.userAgent)) {
-			var $editableFix = $('<input style="width:1px;height:1px;border:none;margin:0;padding:0;" tabIndex="-1">').appendTo('html');
+			var $editableFix = $('<input style="width:0px;height:0px;border:none;margin:0;padding:0;" tabIndex="-1">').appendTo('body');
 			$contentElt.blur(function() {
 				$editableFix[0].setSelectionRange(0, 0);
 				$editableFix.blur();
@@ -876,6 +879,7 @@ define([
 		});
 
 		var clearNewline = false;
+        var everPaste;
 		$contentElt
 			.on('keydown', function(evt) {
 				if(
@@ -919,6 +923,15 @@ define([
 			})
 			.on('mouseup', _.bind(selectionMgr.saveSelectionState, selectionMgr, true, false))
 			.on('paste', function(evt) {
+
+                // 为了解决linux下重复粘贴的问题
+                var now = (new Date()).getTime();
+                if (everPaste && now - everPaste < 100) {
+                    evt.preventDefault();
+                    return;
+                }
+                everPaste = now;
+
 				undoMgr.currentMode = 'paste';
 				evt.preventDefault();
 				var data, clipboardData = (evt.originalEvent || evt).clipboardData;

@@ -287,6 +287,7 @@ var Token = _.Token = function(type, content) {
 	this.content = content;
 };
 
+// 来到这里啦, stringify
 Token.stringify = function(o, language, parent) {
 	if (typeof o == 'string') {
 		return o;
@@ -319,21 +320,8 @@ Token.stringify = function(o, language, parent) {
 	for (var name in env.attributes) {
 		attributes += name + '="' + (env.attributes[name] || '') + '"';
 	}
-
-	return '<' + env.tag + ' class="' + env.classes.join(' ') + '" ' + attributes + '>' + env.content + '</' + env.tag + '>';
 	
-    // 原来是这里啊 token lf
-    if(env.content == "\n") {
-    	// return '\n<' + env.tag + ' class="hehe ' + env.classes.join(' ') + '" ' + attributes + '></' + env.tag + '>';
-        return "\n";
-    }
-    var classes = env.classes.join(' ');
-    // 将span替换成p, 好让ios知道这是另一行
-    if(classes.indexOf('p') != -1) {
-        env.tag = 'p';
-    }
-    return '<' + env.tag + ' class="hehe ' + env.classes.join(' ') + '" ' + attributes + '>' + env.content + '</' + env.tag + '>';
-	
+    return '<' + env.tag + ' class="' + env.classes.join(' ') + '" ' + attributes + '>' + env.content + '</' + env.tag + '>';
 };
 
 if (!self.document) {
