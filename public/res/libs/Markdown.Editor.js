@@ -1906,12 +1906,12 @@
                 postProcessing();
             };
 
-
             background = ui.createBackground();
 
             if (isImage) {
-                if (!this.hooks.insertImageDialog(linkEnteredCallback))
-                    ui.prompt(this.getString("imagedialog"), imageDefaultText, linkEnteredCallback);
+                if (!this.hooks.insertImageDialog(linkEnteredCallback)) {
+                }
+                    // ui.prompt(this.getString("imagedialog"), imageDefaultText, linkEnteredCallback);
             }
             else {
                 if (!this.hooks.insertLinkDialog(linkEnteredCallback))
