@@ -29443,17 +29443,28 @@ define('extensions/scrollSync',[
 	var htmlSectionList = [];
 	var lastEditorScrollTop;
 	var lastPreviewScrollTop;
+
+	// 创建sections
+	// mdSectionList 和 htmlSectionList
+	// 两者一一对应, 知道各自offsetTop
 	var buildSections = _.debounce(function() {
+		// 编辑区
 		mdSectionList = [];
 		var mdSectionOffset;
 		var scrollHeight;
+
 		_.each(editorElt.querySelectorAll(".wmd-input-section"), function(delimiterElt) {
 			if(mdSectionOffset === undefined) {
 				// Force start to 0 for the first section
 				mdSectionOffset = 0;
 				return;
 			}
-			delimiterElt = delimiterElt.firstChild;
+			// life
+			// 因为如果左侧是纯文本编辑, delimiterElt.firstChild就是文本
+			if (delimiterElt.firstChild && delimiterElt.firstChild.nodeName != '#text') {
+				delimiterElt = delimiterElt.firstChild;
+			}
+
 			// Consider div scroll position
 			var newSectionOffset = delimiterElt.offsetTop;
 			mdSectionList.push({
@@ -29463,6 +29474,7 @@ define('extensions/scrollSync',[
 			});
 			mdSectionOffset = newSectionOffset;
 		});
+
 		// Last section
 		scrollHeight = editorElt.scrollHeight;
 		mdSectionList.push({
@@ -29471,6 +29483,7 @@ define('extensions/scrollSync',[
 			height: scrollHeight - mdSectionOffset
 		});
 
+		// 预览区相对应
 		// Find corresponding sections in the preview
 		htmlSectionList = [];
 		var htmlSectionOffset;
@@ -29556,10 +29569,14 @@ define('extensions/scrollSync',[
 		tick();
 	}
 
+	// 同步预览
 	var doScrollSync = _.throttle(function() {
-		if(!isPreviewVisible || mdSectionList.length === 0 || mdSectionList.length !== htmlSectionList.length) {
+		if(!isPreviewVisible 
+			|| mdSectionList.length === 0 
+			|| mdSectionList.length !== htmlSectionList.length) {
 			return;
 		}
+
 		var editorScrollTop = editorElt.scrollTop;
 		editorScrollTop < 0 && (editorScrollTop = 0);
 		var previewScrollTop = previewElt.scrollTop;
@@ -29628,7 +29645,6 @@ define('extensions/scrollSync',[
 	scrollSync.onReady = function() {
 		previewElt = document.querySelector(".preview-container");
 		editorElt = document.querySelector("#wmd-input");
-
 		$(previewElt).scroll(function() {
 			if(isPreviewMoving === false && scrollAdjust === false) {
 				isScrollPreview = true;
@@ -29693,6 +29709,10 @@ define('extensions/scrollSync',[
 	return scrollSync;
 });
 
+// 什么原因会停止scroll或定位不准, 有resize的时候, offset都变了, 但是scrollSync插件里面的没变, 所以需要buildSection
+// 什么时候buildSections ?
+// scrollSync.onPreviewFinished, scrollSync.onLayoutResize
+;
 define('text!extensions/shortcutsDefaultMapping.settings',[],function () { return '{\n    \'mod+b\': bindPagedownButton(\'bold\'),\n    \'mod+i\': bindPagedownButton(\'italic\'),\n    \'mod+l\': bindPagedownButton(\'link\'),\n    \'mod+q\': bindPagedownButton(\'quote\'),\n    \'mod+k\': bindPagedownButton(\'code\'),\n    \'mod+g\': bindPagedownButton(\'image\'),\n    \'mod+o\': bindPagedownButton(\'olist\'),\n    \'mod+u\': bindPagedownButton(\'ulist\'),\n    \'mod+h\': bindPagedownButton(\'heading\'),\n    \'mod+r\': bindPagedownButton(\'hr\'),\n    \'mod+z\': bindPagedownButton(\'undo\'),\n    \'mod+y\': bindPagedownButton(\'redo\'),\n    \'mod+shift+z\': bindPagedownButton(\'redo\'),\n    \'mod+m\': function(evt) {\n        $(\'.button-open-discussion\').click();\n        evt.preventDefault();\n    },\n    \'= = > space\': function() {\n        expand(\'==> \', \'⇒ \');\n    },\n    \'< = = space\': function() {\n        expand(\'<== \', \'⇐ \');\n    },\n    \'S t a c k E d i t\': function() {\n        eventMgr.onMessage("You are stunned!!! Aren\'t you?");\n    }\n}\n';});
 
 define('text!html/shortcutsSettingsBlock.html',[],function () { return '<p>Maps keyboard shortcuts to JavaScript functions.</p>\n<div class="form-horizontal">\n\t<div class="form-group">\n\t\t<label class="col-sm-3 control-label" for="textarea-shortcuts-mapping">Mapping\n\t\t\t<a href="#" class="tooltip-shortcuts-extension">(?)</a>\n\t\t</label>\n\t\t<div class="col-sm-8">\n\t\t\t<textarea id="textarea-shortcuts-mapping" class="form-control"></textarea>\n\t\t</div>\n\t</div>\n</div>\n';});
@@ -31282,19 +31302,6 @@ Token.stringify = function(o, language, parent) {
 	}
 
 	return '<' + env.tag + ' class="' + env.classes.join(' ') + '" ' + attributes + '>' + env.content + '</' + env.tag + '>';
-	
-    // 原来是这里啊 token lf
-    if(env.content == "\n") {
-    	// return '\n<' + env.tag + ' class="hehe ' + env.classes.join(' ') + '" ' + attributes + '></' + env.tag + '>';
-        return "\n";
-    }
-    var classes = env.classes.join(' ');
-    // 将span替换成p, 好让ios知道这是另一行
-    if(classes.indexOf('p') != -1) {
-        env.tag = 'p';
-    }
-    return '<' + env.tag + ' class="hehe ' + env.classes.join(' ') + '" ' + attributes + '>' + env.content + '</' + env.tag + '>';
-	
 };
 
 if (!self.document) {
@@ -35813,12 +35820,17 @@ define('editor',[
 		pagedownEditor = pagedownEditorParam;
 	});
 
+	// 这里, onSectionsCreated, highlightSections, 预览
+	// 但输入中文也有这个事件, 但isComposing=1
 	var isComposing = 0;
 	eventMgr.addListener('onSectionsCreated', function(newSectionList) {
-		if(!isComposing) {
+		// console.trace('onSectionsCreated ==> ' + isComposing);
+		// isComposing = 0;
+		// if(!isComposing) {
+			// 总执行这个
 			updateSectionList(newSectionList);
 			highlightSections();
-		}
+		// }
 		if(fileChanged === true) {
 			// Refresh preview synchronously
 			pagedownEditor.refreshPreview();
@@ -35939,7 +35951,9 @@ define('editor',[
 			}
 			offsetList = this.findOffsets(offsetList);
 			var startOffset = _.isObject(start) ? start : offsetList[startIndex];
+
 			range.setStart(startOffset.container, startOffset.offsetInContainer);
+
 			var endOffset = startOffset;
 			if(end && end != start) {
 				endOffset = _.isObject(end) ? end : offsetList[endIndex];
@@ -35947,10 +35961,21 @@ define('editor',[
 			range.setEnd(endOffset.container, endOffset.offsetInContainer);
 			return range;
 		};
+
+		// scroll 自动滚动
 		var adjustScroll;
 		var debouncedUpdateCursorCoordinates = utils.debounce(function() {
 			$inputElt.toggleClass('has-selection', this.selectionStart !== this.selectionEnd);
-			var coordinates = this.getCoordinates(this.selectionEnd, this.selectionEndContainer, this.selectionEndOffset);
+			// console.log('auto scroll');
+
+			try {
+				var coordinates = this.getCoordinates(this.selectionEnd, this.selectionEndContainer, this.selectionEndOffset);
+			}
+			catch(e) {
+				console.error(e);
+				return;
+			}
+
 			if(this.cursorY !== coordinates.y) {
 				this.cursorY = coordinates.y;
 				eventMgr.onCursorCoordinates(coordinates.x, coordinates.y);
@@ -36667,6 +36692,7 @@ define('editor',[
 						}
 						break;
 					case 13:
+						// console.log('newline');
 						action('newline');
 						evt.preventDefault();
 						break;
@@ -36675,13 +36701,20 @@ define('editor',[
 					clearNewline = false;
 				}
 			})
+			// 当浏览器有非直接的文字输入时, compositionstart事件会以同步模式触发.
 			.on('compositionstart', function() {
+				// console.trace('compositionstart !!!!!');
 				isComposing++;
 			})
-			.on('compositionend', function() {
-				setTimeout(function() {
+			// 当浏览器是直接的文字输入时, compositionend会以同步模式触发.
+			// 中文输入完成后, 比如按空格时触发
+			// 为什么要异步-- ?
+			.on('compositionend', function(e) {
+				// console.log('compositionend !!')
+				// console.log(e);
+				// setTimeout(function() {
 					isComposing--;
-				}, 0);
+				// }, 0);
 			})
 			.on('mouseup', _.bind(selectionMgr.saveSelectionState, selectionMgr, true, false))
 			.on('paste', function(evt) {
@@ -36910,6 +36943,7 @@ define('editor',[
 			}
 			addTrailingLfNode();
 			selectionMgr.updateSelectionRange();
+			// console.trace('.updateCursorCoordinates')
 			selectionMgr.updateCursorCoordinates();
 		});
 	}
@@ -36939,15 +36973,20 @@ define('editor',[
 	// 实现编辑器下预览
 	function highlight(section) {
 		var text = escape(section.text);
+
 		if(!window.viewerMode) {
 			// log("pre")
 			// log(text);
 			// # lif
+			// 如果想以纯文本显示, 请注释之
 			text = Prism.highlight(text, Prism.languages.md);
 			// log('after');
 			// <span class="token h1" ><span class="token md md-hash" >#</span> lif</span>
 			// log(text);
 		}
+
+		// 以下必须需要, 因为scrollSync需要wmd-input-section
+
 		var frontMatter = section.textWithFrontMatter.substring(0, section.textWithFrontMatter.length - section.text.length);
 		if(frontMatter.length) {
 			// Front matter highlighting

@@ -19,17 +19,28 @@ define([
 	var htmlSectionList = [];
 	var lastEditorScrollTop;
 	var lastPreviewScrollTop;
+
+	// 创建sections
+	// mdSectionList 和 htmlSectionList
+	// 两者一一对应, 知道各自offsetTop
 	var buildSections = _.debounce(function() {
+		// 编辑区
 		mdSectionList = [];
 		var mdSectionOffset;
 		var scrollHeight;
+
 		_.each(editorElt.querySelectorAll(".wmd-input-section"), function(delimiterElt) {
 			if(mdSectionOffset === undefined) {
 				// Force start to 0 for the first section
 				mdSectionOffset = 0;
 				return;
 			}
-			delimiterElt = delimiterElt.firstChild;
+			// life
+			// 因为如果左侧是纯文本编辑, delimiterElt.firstChild就是文本
+			if (delimiterElt.firstChild && delimiterElt.firstChild.nodeName != '#text') {
+				delimiterElt = delimiterElt.firstChild;
+			}
+
 			// Consider div scroll position
 			var newSectionOffset = delimiterElt.offsetTop;
 			mdSectionList.push({
@@ -39,6 +50,7 @@ define([
 			});
 			mdSectionOffset = newSectionOffset;
 		});
+
 		// Last section
 		scrollHeight = editorElt.scrollHeight;
 		mdSectionList.push({
@@ -47,6 +59,7 @@ define([
 			height: scrollHeight - mdSectionOffset
 		});
 
+		// 预览区相对应
 		// Find corresponding sections in the preview
 		htmlSectionList = [];
 		var htmlSectionOffset;
@@ -132,10 +145,14 @@ define([
 		tick();
 	}
 
+	// 同步预览
 	var doScrollSync = _.throttle(function() {
-		if(!isPreviewVisible || mdSectionList.length === 0 || mdSectionList.length !== htmlSectionList.length) {
+		if(!isPreviewVisible 
+			|| mdSectionList.length === 0 
+			|| mdSectionList.length !== htmlSectionList.length) {
 			return;
 		}
+
 		var editorScrollTop = editorElt.scrollTop;
 		editorScrollTop < 0 && (editorScrollTop = 0);
 		var previewScrollTop = previewElt.scrollTop;
@@ -204,7 +221,6 @@ define([
 	scrollSync.onReady = function() {
 		previewElt = document.querySelector(".preview-container");
 		editorElt = document.querySelector("#wmd-input");
-
 		$(previewElt).scroll(function() {
 			if(isPreviewMoving === false && scrollAdjust === false) {
 				isScrollPreview = true;
@@ -268,3 +284,7 @@ define([
 
 	return scrollSync;
 });
+
+// 什么原因会停止scroll或定位不准, 有resize的时候, offset都变了, 但是scrollSync插件里面的没变, 所以需要buildSection
+// 什么时候buildSections ?
+// scrollSync.onPreviewFinished, scrollSync.onLayoutResize
