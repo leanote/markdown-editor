@@ -1,12 +1,12 @@
 define([
 	// "jquery",
 	"underscore",
-	"storage",
+	// "storage",
 	"crel",
 	"xregexp",
-	"stacktrace",
+	// "stacktrace",
 	// "FileSaver"
-], function( _, storage, crel, XRegExp, printStackTrace, saveAs) {
+], function( _, /*storage, */crel, XRegExp/*, printStackTrace, saveAs*/) {
 
 	var utils = {};
 
@@ -454,9 +454,10 @@ define([
 		});
 	};
 
+	/*
 	// Export data on disk
 	utils.saveAs = function(content, filename) {
-		if(saveAs !== undefined && !/constructor/i.test(window.HTMLElement) /* safari does not support saveAs */) {
+		if(saveAs !== undefined && !/constructor/i.test(window.HTMLElement)) {
 			if(_.isString(content)) {
 				content = new Blob([
 					content
@@ -483,6 +484,7 @@ define([
 			}
 		}
 	};
+	*/
 
 	// Time shared by others modules
 	utils.updateCurrentTime = function() {
@@ -492,57 +494,63 @@ define([
 
 	// Serialize sync/publish attributes and store it in the storage
 	utils.storeAttributes = function(attributes) {
-		var storeIndex = attributes.syncIndex || attributes.publishIndex;
-		// Don't store sync/publish index
-		var storedAttributes = _.omit(attributes, "syncIndex", "publishIndex", "provider");
-		// Store providerId instead of provider
-		storedAttributes.provider = attributes.provider.providerId;
-		storage[storeIndex] = JSON.stringify(storedAttributes);
+		// return;
+		// var storeIndex = attributes.syncIndex || attributes.publishIndex;
+		// // Don't store sync/publish index
+		// var storedAttributes = _.omit(attributes, "syncIndex", "publishIndex", "provider");
+		// // Store providerId instead of provider
+		// storedAttributes.provider = attributes.provider.providerId;
+		// storage[storeIndex] = JSON.stringify(storedAttributes);
 	};
 
 	// Retrieve/parse an index array from storage
 	utils.retrieveIndexArray = function(storeIndex) {
-		try {
-			return _.compact(storage[storeIndex].split(";"));
-		}
-		catch(e) {
-			storage[storeIndex] = ";";
-			return [];
-		}
+		return;
+		// try {
+		// 	return _.compact(storage[storeIndex].split(";"));
+		// }
+		// catch(e) {
+		// 	storage[storeIndex] = ";";
+		// 	return [];
+		// }
 	};
 
 	// Append an index to an array in storage
 	utils.appendIndexToArray = function(storeIndex, index) {
-		storage[storeIndex] += index + ";";
+		return;
+		// storage[storeIndex] += index + ";";
 	};
 
 	// Remove an index from an array in storage
 	utils.removeIndexFromArray = function(storeIndex, index) {
-		storage[storeIndex] = storage[storeIndex].replace(";" + index + ";", ";");
+		return;
+		// storage[storeIndex] = storage[storeIndex].replace(";" + index + ";", ";");
 	};
 
 	// Retrieve/parse an object from storage. Returns undefined if error.
 	utils.retrieveIgnoreError = function(storeIndex) {
+		/*
 		try {
 			return JSON.parse(storage[storeIndex]);
 		}
 		catch(e) {
 			return undefined;
 		}
+		*/
 	};
 
 	var eventList = [];
 	utils.logValue = function(value) {
-		eventList.unshift(value);
-		if(eventList.length > 5) {
-			eventList.pop();
-		}
+		// eventList.unshift(value);
+		// if(eventList.length > 5) {
+		// 	eventList.pop();
+		// }
 	};
 	utils.logStackTrace = function() {
-		eventList.unshift(printStackTrace());
-		if(eventList.length > 5) {
-			eventList.pop();
-		}
+		// eventList.unshift(printStackTrace());
+		// if(eventList.length > 5) {
+		// 	eventList.pop();
+		// }
 	};
 	utils.formatEventList = function() {
 		var result = [];
