@@ -1,12 +1,12 @@
 define([
 	// "jquery",
 	"underscore",
-	"classes/Extension",
-	"text!html/scrollSyncSettingsBlock.html"
-], function(_, Extension, scrollSyncSettingsBlockHTML) {
+	"classes/Extension"
+	// "text!html/scrollSyncSettingsBlock.html"
+], function(_, Extension) {
 
 	var scrollSync = new Extension("scrollSync", "Scroll Sync", true, true);
-	scrollSync.settingsBlock = scrollSyncSettingsBlockHTML;
+	// scrollSync.settingsBlock = scrollSyncSettingsBlockHTML;
 
 	var sectionList;
 	scrollSync.onSectionsCreated = function(sectionListParam) {

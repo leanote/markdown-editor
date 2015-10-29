@@ -2,26 +2,26 @@
 define([
 	"utils",
 	"classes/Extension",
-	"text!html/mathJaxSettingsBlock.html",
+	// "text!html/mathJaxSettingsBlock.html",
 	"mathjax"
-], function(utils, Extension, mathJaxSettingsBlockHTML) {
+], function(utils, Extension) {
 
 	var mathJax = new Extension("mathJax", "MathJax", true);
-	mathJax.settingsBlock = mathJaxSettingsBlockHTML;
+	// mathJax.settingsBlock = mathJaxSettingsBlockHTML;
 	mathJax.defaultConfig = {
 		tex    : "{}",
 		tex2jax: '{ inlineMath: [["$","$"],["\\\\\\\\(","\\\\\\\\)"]], displayMath: [["$$","$$"],["\\\\[","\\\\]"]], processEscapes: true }'
 	};
 
-	mathJax.onLoadSettings = function() {
-		utils.setInputValue("#input-mathjax-config-tex", mathJax.config.tex);
-		utils.setInputValue("#input-mathjax-config-tex2jax", mathJax.config.tex2jax);
-	};
+	// mathJax.onLoadSettings = function() {
+	// 	utils.setInputValue("#input-mathjax-config-tex", mathJax.config.tex);
+	// 	utils.setInputValue("#input-mathjax-config-tex2jax", mathJax.config.tex2jax);
+	// };
 
-	mathJax.onSaveSettings = function(newConfig, event) {
-		newConfig.tex = utils.getInputJsValue("#input-mathjax-config-tex", event);
-		newConfig.tex2jax = utils.getInputJsValue("#input-mathjax-config-tex2jax", event);
-	};
+	// mathJax.onSaveSettings = function(newConfig, event) {
+	// 	newConfig.tex = utils.getInputJsValue("#input-mathjax-config-tex", event);
+	// 	newConfig.tex2jax = utils.getInputJsValue("#input-mathjax-config-tex2jax", event);
+	// };
 
 	/*jshint ignore:start */
 	mathJax.onPagedownConfigure = function(editorObject) {

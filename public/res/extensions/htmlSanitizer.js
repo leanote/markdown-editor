@@ -4,11 +4,11 @@ define([
 	"utils",
 	"logger",
 	"classes/Extension",
-	"text!html/htmlSanitizerSettingsBlock.html"
-], function(_, utils, logger, Extension, htmlSanitizerSettingsBlockHTML) {
+	// "text!html/htmlSanitizerSettingsBlock.html"
+], function(_, utils, logger, Extension) {
 
 	var htmlSanitizer = new Extension("htmlSanitizer", "HTML Sanitizer", true);
-	htmlSanitizer.settingsBlock = htmlSanitizerSettingsBlockHTML;
+	// htmlSanitizer.settingsBlock = htmlSanitizerSettingsBlockHTML;
 
 	var buf;
 	htmlSanitizer.onPagedownConfigure = function(editor) {
