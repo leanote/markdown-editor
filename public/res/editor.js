@@ -8,12 +8,12 @@ define([
 	'eventMgr',
 	'prism-core',
 	'diff_match_patch_uncompressed',
-	'jsondiffpatch',
+	// 'jsondiffpatch',
 	'crel',
 	'rangy',
 	'MutationObservers',
 	'libs/prism-markdown'
-], function( _, utils, settings, eventMgr, Prism, diff_match_patch, jsondiffpatch, crel, rangy) {
+], function( _, utils, settings, eventMgr, Prism, diff_match_patch, crel, rangy) {
 
 	var editor = {};
 	var scrollTop = 0;
@@ -48,12 +48,17 @@ define([
 		pagedownEditor = pagedownEditorParam;
 	});
 
+	// 这里, onSectionsCreated, highlightSections, 预览
+	// 但输入中文也有这个事件, 但isComposing=1
 	var isComposing = 0;
 	eventMgr.addListener('onSectionsCreated', function(newSectionList) {
-		if(!isComposing) {
+		// console.trace('onSectionsCreated ==> ' + isComposing);
+		// isComposing = 0;
+		// if(!isComposing) {
+			// 总执行这个
 			updateSectionList(newSectionList);
 			highlightSections();
-		}
+		// }
 		if(fileChanged === true) {
 			// Refresh preview synchronously
 			pagedownEditor.refreshPreview();
@@ -103,6 +108,7 @@ define([
 	editor.watcher = watcher;
 
 	var diffMatchPatch = new diff_match_patch();
+	/*
 	var jsonDiffPatch = jsondiffpatch.create({
 		objectHash: function(obj) {
 			return JSON.stringify(obj);
@@ -114,6 +120,7 @@ define([
 			minLength: 9999999
 		}
 	});
+	*/
 
 	function SelectionMgr() {
 		var self = this;
@@ -174,7 +181,9 @@ define([
 			}
 			offsetList = this.findOffsets(offsetList);
 			var startOffset = _.isObject(start) ? start : offsetList[startIndex];
+
 			range.setStart(startOffset.container, startOffset.offsetInContainer);
+
 			var endOffset = startOffset;
 			if(end && end != start) {
 				endOffset = _.isObject(end) ? end : offsetList[endIndex];
@@ -182,11 +191,22 @@ define([
 			range.setEnd(endOffset.container, endOffset.offsetInContainer);
 			return range;
 		};
+
+		// scroll 自动滚动
 		var adjustScroll;
         var $body = $('body');
 		var debouncedUpdateCursorCoordinates = utils.debounce(function() {
 			$inputElt.toggleClass('has-selection', this.selectionStart !== this.selectionEnd);
-			var coordinates = this.getCoordinates(this.selectionEnd, this.selectionEndContainer, this.selectionEndOffset);
+			// console.log('auto scroll');
+
+			try {
+				var coordinates = this.getCoordinates(this.selectionEnd, this.selectionEndContainer, this.selectionEndOffset);
+			}
+			catch(e) {
+				console.error(e);
+				return;
+			}
+
 			if(this.cursorY !== coordinates.y) {
 				this.cursorY = coordinates.y;
 				eventMgr.onCursorCoordinates(coordinates.x, coordinates.y);
@@ -646,6 +666,7 @@ define([
 				selectionMgr.setSelectionStartEnd(selectionStart, selectionEnd);
 				selectionMgr.updateSelectionRange();
 				selectionMgr.updateCursorCoordinates(true);
+				/*
 				var discussionListJSON = fileDesc.discussionListJSON;
 				if(discussionListJSON != state.discussionListJSON) {
 					var oldDiscussionList = fileDesc.discussionList;
@@ -666,6 +687,7 @@ define([
 					});
 					commentsChanged && eventMgr.onCommentsChanged(fileDesc);
 				}
+				*/
 			});
 
 			selectionStartBefore = selectionStart;
@@ -764,15 +786,17 @@ define([
 			undoMgr.currentMode = undoMgr.currentMode || 'typing';
 			var discussionList = _.values(fileDesc.discussionList);
 			fileDesc.newDiscussion && discussionList.push(fileDesc.newDiscussion);
-			var updateDiscussionList = adjustCommentOffsets(textContent, newTextContent, discussionList);
+			// var updateDiscussionList = adjustCommentOffsets(textContent, newTextContent, discussionList);
 			textContent = newTextContent;
-			if(updateDiscussionList === true) {
-				fileDesc.discussionList = fileDesc.discussionList; // Write discussionList in localStorage
-			}
+			// if(updateDiscussionList === true) {
+			// 	fileDesc.discussionList = fileDesc.discussionList; // Write discussionList in localStorage
+			// }
 			fileDesc.content = textContent;
 			selectionMgr.saveSelectionState();
 			eventMgr.onContentChanged(fileDesc, textContent);
-			updateDiscussionList && eventMgr.onCommentsChanged(fileDesc);
+
+			// updateDiscussionList && eventMgr.onCommentsChanged(fileDesc);
+
 			undoMgr.saveState();
 			triggerSpellCheck();
 		}
@@ -791,6 +815,7 @@ define([
 		}
 	}
 
+	/*
 	function adjustCommentOffsets(oldTextContent, newTextContent, discussionList) {
 		if(!discussionList.length) {
 			return;
@@ -839,6 +864,8 @@ define([
 	}
 
 	editor.adjustCommentOffsets = adjustCommentOffsets;
+	*
+	*/
 
 	// 入口
 	editor.init = function() {
@@ -939,6 +966,7 @@ define([
 						}
 						break;
 					case 13:
+						// console.log('newline');
 						action('newline');
 						evt.preventDefault();
 						break;
@@ -951,13 +979,20 @@ define([
                 action('newline');
                 selectionMgr.updateCursorCoordinates(true);
             })
+			// 当浏览器有非直接的文字输入时, compositionstart事件会以同步模式触发.
 			.on('compositionstart', function() {
+				// console.trace('compositionstart !!!!!');
 				isComposing++;
 			})
-			.on('compositionend', function() {
-				setTimeout(function() {
+			// 当浏览器是直接的文字输入时, compositionend会以同步模式触发.
+			// 中文输入完成后, 比如按空格时触发
+			// 为什么要异步-- ?
+			.on('compositionend', function(e) {
+				// console.log('compositionend !!')
+				// console.log(e);
+				// setTimeout(function() {
 					isComposing--;
-				}, 0);
+				// }, 0);
 			})
 			.on('mouseup', _.bind(selectionMgr.saveSelectionState, selectionMgr, true, false))
 			.on('paste', function(evt) {
@@ -1186,6 +1221,7 @@ define([
 			}
 			addTrailingLfNode();
 			selectionMgr.updateSelectionRange();
+			// console.trace('.updateCursorCoordinates')
 			selectionMgr.updateCursorCoordinates();
 		});
 	}
@@ -1217,16 +1253,20 @@ define([
 	// 实现编辑器下预览
 	function highlight(section) {
 		var text = escape(section.text);
+
 		if(!window.viewerMode) {
 			// log("pre")
 			// log(text);
 			// # lif
             // life 去掉这个, 可以享受光标不易定位的问题
+			// 如果想以纯文本显示, 请注释之
 			text = Prism.highlight(text, Prism.languages.md);
 			// log('after');
 			// <span class="token h1" ><span class="token md md-hash" >#</span> lif</span>
 			// log(text);
 		}
+
+		// 以下必须需要, 因为scrollSync需要wmd-input-section
 		var frontMatter = section.textWithFrontMatter.substring(0, section.textWithFrontMatter.length - section.text.length);
 		if(frontMatter.length) {
 			// Front matter highlighting

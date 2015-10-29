@@ -3,28 +3,28 @@ define([
     "underscore",
     "utils",
     "classes/Extension",
-    "text!html/tocSettingsBlock.html",
-], function(_, utils, Extension, tocSettingsBlockHTML) {
+    // "ext!html/tocSettingsBlock.html",
+], function(_, utils, Extension) {
 
     var toc = new Extension("toc", "Table of Contents", true);
-    toc.settingsBlock = tocSettingsBlockHTML;
+    // toc.settingsBlock = tocSettingsBlockHTML;
     toc.defaultConfig = {
         marker: "\\[(TOC|toc)\\]",
         maxDepth: 6,
         button: true,
     };
 
-    toc.onLoadSettings = function() {
-        utils.setInputValue("#input-toc-marker", toc.config.marker);
-        utils.setInputValue("#input-toc-maxdepth", toc.config.maxDepth);
-        utils.setInputChecked("#input-toc-button", toc.config.button);
-    };
+    // toc.onLoadSettings = function() {
+    //     utils.setInputValue("#input-toc-marker", toc.config.marker);
+    //     utils.setInputValue("#input-toc-maxdepth", toc.config.maxDepth);
+    //     utils.setInputChecked("#input-toc-button", toc.config.button);
+    // };
 
-    toc.onSaveSettings = function(newConfig, event) {
-        newConfig.marker = utils.getInputRegExpValue("#input-toc-marker", event);
-        newConfig.maxDepth = utils.getInputIntValue("#input-toc-maxdepth");
-        newConfig.button = utils.getInputChecked("#input-toc-button");
-    };
+    // toc.onSaveSettings = function(newConfig, event) {
+    //     newConfig.marker = utils.getInputRegExpValue("#input-toc-marker", event);
+    //     newConfig.maxDepth = utils.getInputIntValue("#input-toc-maxdepth");
+    //     newConfig.button = utils.getInputChecked("#input-toc-button");
+    // };
 
     /*
     toc.onCreatePreviewButton = function() {
