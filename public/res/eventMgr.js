@@ -7,7 +7,7 @@ define([
 	"logger",
 	"classes/Extension",
 	"settings",
-	"extensions/yamlFrontMatterParser",
+	// "extensions/yamlFrontMatterParser",
 	"extensions/markdownSectionParser",
 	"extensions/partialRendering",
 	// "extensions/buttonMarkdownSyntax",

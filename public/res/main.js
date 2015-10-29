@@ -3,11 +3,13 @@
 requirejs.config({
 	waitSeconds: 0,
 	packages: [
+		/*
 		{
 			name: 'css',
 			location: 'bower-libs/require-css',
 			main: 'css'
 		},
+		*/
 		{
 			name: 'less',
 			location: 'bower-libs/require-less',
@@ -24,26 +26,26 @@ requirejs.config({
 		toMarkdown: 'bower-libs/to-markdown/src/to-markdown',
 		text: 'bower-libs/requirejs-text/text',
 		mathjax: 'libs/MathJax/MathJax.js?config=TeX-AMS_HTML',
-		bootstrap: 'bower-libs/bootstrap/dist/js/bootstrap',
+		// bootstrap: 'bower-libs/bootstrap/dist/js/bootstrap',
 		requirejs: 'bower-libs/requirejs/require',
 		'google-code-prettify': 'bower-libs/google-code-prettify/src/prettify',
 		highlightjs: 'libs/highlight/highlight.pack',
 		'jquery-waitforimages': 'bower-libs/waitForImages/src/jquery.waitforimages',
-		FileSaver: 'bower-libs/FileSaver/FileSaver',
-		stacktrace: 'bower-libs/stacktrace/stacktrace',
-		'requirejs-text': 'bower-libs/requirejs-text/text',
-		'bootstrap-tour': 'bower-libs/bootstrap-tour/build/js/bootstrap-tour',
+		// FileSaver: 'bower-libs/FileSaver/FileSaver',
+		// stacktrace: 'bower-libs/stacktrace/stacktrace',
+		// 'requirejs-text': 'bower-libs/requirejs-text/text',
+		// 'bootstrap-tour': 'bower-libs/bootstrap-tour/build/js/bootstrap-tour',
 		css_browser_selector: 'bower-libs/css_browser_selector/css_browser_selector',
 		'pagedown-extra': 'bower-libs/pagedown-extra/node-pagedown-extra',
 		pagedownExtra: 'bower-libs/pagedown-extra/Markdown.Extra',
 		pagedown: 'libs/Markdown.Editor',
-		'require-css': 'bower-libs/require-css/css',
+		// 'require-css': 'bower-libs/require-css/css',
 		xregexp: 'bower-libs/xregexp/xregexp-all',
-		yaml: 'bower-libs/yaml.js/bin/yaml',
-		'yaml.js': 'bower-libs/yaml.js',
-		'yaml-js': 'bower-libs/yaml.js/bin/yaml',
+		// yaml: 'bower-libs/yaml.js/bin/yaml',
+		// 'yaml.js': 'bower-libs/yaml.js',
+		// 'yaml-js': 'bower-libs/yaml.js/bin/yaml',
 		css: 'bower-libs/require-css/css',
-		'css-builder': 'bower-libs/require-css/css-builder',
+		// 'css-builder': 'bower-libs/require-css/css-builder',
 		normalize: 'bower-libs/require-css/normalize',
 		prism: 'bower-libs/prism/prism',
 		'prism-core': 'bower-libs/prism/components/prism-core',
@@ -108,15 +110,15 @@ requirejs.config({
 			'bower-libs/prism/components/prism-markup',
 			'libs/prism-latex'
 		],
-		'bootstrap-record': [
-			'mousetrap'
-		],
-		stacktrace: {
-			exports: 'printStackTrace'
-		},
-		FileSaver: {
-			exports: 'saveAs'
-		},
+		// 'bootstrap-record': [
+		// 	'mousetrap'
+		// ],
+		// stacktrace: {
+		// 	exports: 'printStackTrace'
+		// },
+		// FileSaver: {
+		// 	exports: 'saveAs'
+		// },
 		MutationObservers: [
 			'WeakMap'
 		],
@@ -147,12 +149,6 @@ requirejs.config({
 window.viewerMode = false;
 // Keep the theme in a global variable
 window.theme = 'default';
-var themeModule = "less!themes/" + window.theme;
-/*
-if(window.baseDir.indexOf('-min') !== -1) {
-	themeModule = "css!themes/" + window.theme;
-}
-*/
 
 window.getMsg || (getMsg = function(msg) {
 	return msg;
