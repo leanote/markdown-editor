@@ -219,6 +219,7 @@ define([
 	addEventHook("onTweet");
 
 
+	// onPreviewFinished 触发 scrollSync
 	var onPreviewFinished = createEventHook("onPreviewFinished");
 	var onAsyncPreviewListenerList = getExtensionListenerList("onAsyncPreview");
 	var previewContentsElt;
@@ -242,6 +243,8 @@ define([
 			});
 		}
 
+		// recursiveCall(onAsyncPreviewListenerList);
+		// 加载图片后才会触发onPreviewFinished, 因为offsetTop()会有影响, 所以, 必须要在图片加载完成才触发
 		recursiveCall(onAsyncPreviewListenerList.concat([
 			function(callback) {
 				// We assume some images are loading asynchronously after the preview

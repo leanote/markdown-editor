@@ -9,12 +9,12 @@ requirejs.config({
 			location: 'bower-libs/require-css',
 			main: 'css'
 		},
-		*/
 		{
 			name: 'less',
 			location: 'bower-libs/require-less',
 			main: 'less'
 		}
+		*/
 	],
 	paths: {
 		// jquery: 'bower-libs/jquery/jquery',
@@ -62,7 +62,7 @@ requirejs.config({
 		raphael: 'bower-libs/raphael/raphael',
 		'flow-chart': 'bower-libs/flowchart/release/flowchart.amd-1.3.4.min',
 		flowchart: 'bower-libs/flowchart/release/flowchart-1.3.4.min',
-		monetizejs: 'bower-libs/monetizejs/src/monetize',
+		// monetizejs: 'bower-libs/monetizejs/src/monetize',
 		waitForImages: 'bower-libs/waitForImages/dist/jquery.waitforimages',
 		MathJax: '../libs/MathJax/MathJax'
 	},
@@ -82,9 +82,9 @@ requirejs.config({
 		diff_match_patch_uncompressed: {
 			exports: 'diff_match_patch'
 		},
-		jsondiffpatch: [
-			'diff_match_patch_uncompressed'
-		],
+		// jsondiffpatch: [
+		// 	'diff_match_patch_uncompressed'
+		// ],
 		rangy: {
 			exports: 'rangy'
 		},
@@ -94,9 +94,9 @@ requirejs.config({
 		mousetrap: {
 			exports: 'Mousetrap'
 		},
-		'yaml-js': {
-			exports: 'YAML'
-		},
+		// 'yaml-js': {
+		// 	exports: 'YAML'
+		// },
 		'prism-core': {
 			exports: 'Prism'
 		},
@@ -148,14 +148,12 @@ requirejs.config({
 
 window.viewerMode = false;
 // Keep the theme in a global variable
-window.theme = 'default';
+// window.theme = 'default';
 
 window.getMsg || (getMsg = function(msg) {
 	return msg;
 });
 
-// RequireJS entry point. By requiring synchronizer, publisher, sharing and
-// media-importer, we are actually loading all the modules
 require([
 	// "jquery",
 	"rangy",
@@ -165,7 +163,7 @@ require([
 	// "publisher",
 	// "sharing",
 	// "mediaImporter",
-	"css",
+	// "css",
 	"rangy-cssclassapplier"
 	// ,themeModule // 生产模式
 ], function( rangy, core) {
