@@ -4,7 +4,7 @@ define([
 	"utils",
 	"logger",
 	"classes/Extension",
-	// "text!html/umlDiagramsSettingsBlock.html",
+	// "ext!html/umlDiagramsSettingsBlock.html",
 	'crel',
 	'Diagram',
 	'flow-chart'

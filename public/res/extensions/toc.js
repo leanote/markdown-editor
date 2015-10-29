@@ -3,7 +3,7 @@ define([
     "underscore",
     "utils",
     "classes/Extension",
-    // "text!html/tocSettingsBlock.html",
+    // "ext!html/tocSettingsBlock.html",
 ], function(_, utils, Extension) {
 
     var toc = new Extension("toc", "Table of Contents", true);

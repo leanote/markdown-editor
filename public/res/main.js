@@ -44,7 +44,7 @@ requirejs.config({
 		// yaml: 'bower-libs/yaml.js/bin/yaml',
 		// 'yaml.js': 'bower-libs/yaml.js',
 		// 'yaml-js': 'bower-libs/yaml.js/bin/yaml',
-		css: 'bower-libs/require-css/css',
+		// css: 'bower-libs/require-css/css',
 		// 'css-builder': 'bower-libs/require-css/css-builder',
 		normalize: 'bower-libs/require-css/normalize',
 		prism: 'bower-libs/prism/prism',
@@ -55,7 +55,7 @@ requirejs.config({
 		'rangy-cssclassapplier': 'bower-libs/rangy/rangy-cssclassapplier',
 		diff_match_patch: 'bower-libs/google-diff-match-patch-js/diff_match_patch',
 		diff_match_patch_uncompressed: 'bower-libs/google-diff-match-patch-js/diff_match_patch_uncompressed',
-		jsondiffpatch: 'bower-libs/jsondiffpatch/build/bundle',
+		// jsondiffpatch: 'bower-libs/jsondiffpatch/build/bundle',
 		hammerjs: 'bower-libs/hammerjs/hammer',
 		Diagram: 'bower-libs/js-sequence-diagrams/src/sequence-diagram',
 		'diagram-grammar': 'bower-libs/js-sequence-diagrams/build/diagram-grammar',
@@ -167,9 +167,6 @@ require([
 	"rangy-cssclassapplier"
 	// ,themeModule // 生产模式
 ], function( rangy, core) {
-	if(window.noStart) {
-		return;
-	}
 	$(function() {
 		rangy.init();
 		// Here, all the modules are loaded and the DOM is ready

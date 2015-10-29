@@ -4,7 +4,7 @@ define([
 	"utils",
 	"logger",
 	"classes/Extension",
-	// "text!html/htmlSanitizerSettingsBlock.html"
+	// "ext!html/htmlSanitizerSettingsBlock.html"
 ], function(_, utils, logger, Extension) {
 
 	var htmlSanitizer = new Extension("htmlSanitizer", "HTML Sanitizer", true);

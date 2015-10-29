@@ -2,7 +2,7 @@
 define([
 	"utils",
 	"classes/Extension",
-	// "text!html/mathJaxSettingsBlock.html",
+	// "ext!html/mathJaxSettingsBlock.html",
 	"mathjax"
 ], function(utils, Extension) {
 

@@ -5,7 +5,7 @@ define([
 	"utils",
 	"logger",
 	"classes/Extension",
-	// "text!html/markdownExtraSettingsBlock.html",
+	// "ext!html/markdownExtraSettingsBlock.html",
 	'google-code-prettify',
 	// 'highlightjs',
 	'crel',

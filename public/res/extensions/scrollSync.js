@@ -2,7 +2,7 @@ define([
 	// "jquery",
 	"underscore",
 	"classes/Extension"
-	// "text!html/scrollSyncSettingsBlock.html"
+	// "ext!html/scrollSyncSettingsBlock.html"
 ], function(_, Extension) {
 
 	var scrollSync = new Extension("scrollSync", "Scroll Sync", true, true);

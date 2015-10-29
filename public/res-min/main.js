@@ -14538,7 +14538,7 @@ define('extensions/markdownExtra',[
 	"utils",
 	"logger",
 	"classes/Extension",
-	// "text!html/markdownExtraSettingsBlock.html",
+	// "ext!html/markdownExtraSettingsBlock.html",
 	'google-code-prettify',
 	// 'highlightjs',
 	'crel',
@@ -14623,405 +14623,13 @@ define('extensions/markdownExtra',[
 	return markdownExtra;
 });
 
-/**
- * @license RequireJS text 2.0.13 Copyright (c) 2010-2014, The Dojo Foundation All Rights Reserved.
- * Available via the MIT or new BSD license.
- * see: http://github.com/requirejs/text for details
- */
-/*jslint regexp: true */
-/*global require, XMLHttpRequest, ActiveXObject,
-  define, window, process, Packages,
-  java, location, Components, FileUtils */
-
-define('text',['module'], function (module) {
-    
-
-    var text, fs, Cc, Ci, xpcIsWindows,
-        progIds = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP', 'Msxml2.XMLHTTP.4.0'],
-        xmlRegExp = /^\s*<\?xml(\s)+version=[\'\"](\d)*.(\d)*[\'\"](\s)*\?>/im,
-        bodyRegExp = /<body[^>]*>\s*([\s\S]+)\s*<\/body>/im,
-        hasLocation = typeof location !== 'undefined' && location.href,
-        defaultProtocol = hasLocation && location.protocol && location.protocol.replace(/\:/, ''),
-        defaultHostName = hasLocation && location.hostname,
-        defaultPort = hasLocation && (location.port || undefined),
-        buildMap = {},
-        masterConfig = (module.config && module.config()) || {};
-
-    text = {
-        version: '2.0.13',
-
-        strip: function (content) {
-            //Strips <?xml ...?> declarations so that external SVG and XML
-            //documents can be added to a document without worry. Also, if the string
-            //is an HTML document, only the part inside the body tag is returned.
-            if (content) {
-                content = content.replace(xmlRegExp, "");
-                var matches = content.match(bodyRegExp);
-                if (matches) {
-                    content = matches[1];
-                }
-            } else {
-                content = "";
-            }
-            return content;
-        },
-
-        jsEscape: function (content) {
-            return content.replace(/(['\\])/g, '\\$1')
-                .replace(/[\f]/g, "\\f")
-                .replace(/[\b]/g, "\\b")
-                .replace(/[\n]/g, "\\n")
-                .replace(/[\t]/g, "\\t")
-                .replace(/[\r]/g, "\\r")
-                .replace(/[\u2028]/g, "\\u2028")
-                .replace(/[\u2029]/g, "\\u2029");
-        },
-
-        createXhr: masterConfig.createXhr || function () {
-            //Would love to dump the ActiveX crap in here. Need IE 6 to die first.
-            var xhr, i, progId;
-            if (typeof XMLHttpRequest !== "undefined") {
-                return new XMLHttpRequest();
-            } else if (typeof ActiveXObject !== "undefined") {
-                for (i = 0; i < 3; i += 1) {
-                    progId = progIds[i];
-                    try {
-                        xhr = new ActiveXObject(progId);
-                    } catch (e) {}
-
-                    if (xhr) {
-                        progIds = [progId];  // so faster next time
-                        break;
-                    }
-                }
-            }
-
-            return xhr;
-        },
-
-        /**
-         * Parses a resource name into its component parts. Resource names
-         * look like: module/name.ext!strip, where the !strip part is
-         * optional.
-         * @param {String} name the resource name
-         * @returns {Object} with properties "moduleName", "ext" and "strip"
-         * where strip is a boolean.
-         */
-        parseName: function (name) {
-            var modName, ext, temp,
-                strip = false,
-                index = name.lastIndexOf("."),
-                isRelative = name.indexOf('./') === 0 ||
-                             name.indexOf('../') === 0;
-
-            if (index !== -1 && (!isRelative || index > 1)) {
-                modName = name.substring(0, index);
-                ext = name.substring(index + 1);
-            } else {
-                modName = name;
-            }
-
-            temp = ext || modName;
-            index = temp.indexOf("!");
-            if (index !== -1) {
-                //Pull off the strip arg.
-                strip = temp.substring(index + 1) === "strip";
-                temp = temp.substring(0, index);
-                if (ext) {
-                    ext = temp;
-                } else {
-                    modName = temp;
-                }
-            }
-
-            return {
-                moduleName: modName,
-                ext: ext,
-                strip: strip
-            };
-        },
-
-        xdRegExp: /^((\w+)\:)?\/\/([^\/\\]+)/,
-
-        /**
-         * Is an URL on another domain. Only works for browser use, returns
-         * false in non-browser environments. Only used to know if an
-         * optimized .js version of a text resource should be loaded
-         * instead.
-         * @param {String} url
-         * @returns Boolean
-         */
-        useXhr: function (url, protocol, hostname, port) {
-            var uProtocol, uHostName, uPort,
-                match = text.xdRegExp.exec(url);
-            if (!match) {
-                return true;
-            }
-            uProtocol = match[2];
-            uHostName = match[3];
-
-            uHostName = uHostName.split(':');
-            uPort = uHostName[1];
-            uHostName = uHostName[0];
-
-            return (!uProtocol || uProtocol === protocol) &&
-                   (!uHostName || uHostName.toLowerCase() === hostname.toLowerCase()) &&
-                   ((!uPort && !uHostName) || uPort === port);
-        },
-
-        finishLoad: function (name, strip, content, onLoad) {
-            content = strip ? text.strip(content) : content;
-            if (masterConfig.isBuild) {
-                buildMap[name] = content;
-            }
-            onLoad(content);
-        },
-
-        load: function (name, req, onLoad, config) {
-            //Name has format: some.module.filext!strip
-            //The strip part is optional.
-            //if strip is present, then that means only get the string contents
-            //inside a body tag in an HTML string. For XML/SVG content it means
-            //removing the <?xml ...?> declarations so the content can be inserted
-            //into the current doc without problems.
-
-            // Do not bother with the work if a build and text will
-            // not be inlined.
-            if (config && config.isBuild && !config.inlineText) {
-                onLoad();
-                return;
-            }
-
-            masterConfig.isBuild = config && config.isBuild;
-
-            var parsed = text.parseName(name),
-                nonStripName = parsed.moduleName +
-                    (parsed.ext ? '.' + parsed.ext : ''),
-                url = req.toUrl(nonStripName),
-                useXhr = (masterConfig.useXhr) ||
-                         text.useXhr;
-
-            // Do not load if it is an empty: url
-            if (url.indexOf('empty:') === 0) {
-                onLoad();
-                return;
-            }
-
-            //Load the text. Use XHR if possible and in a browser.
-            if (!hasLocation || useXhr(url, defaultProtocol, defaultHostName, defaultPort)) {
-                text.get(url, function (content) {
-                    text.finishLoad(name, parsed.strip, content, onLoad);
-                }, function (err) {
-                    if (onLoad.error) {
-                        onLoad.error(err);
-                    }
-                });
-            } else {
-                //Need to fetch the resource across domains. Assume
-                //the resource has been optimized into a JS module. Fetch
-                //by the module name + extension, but do not include the
-                //!strip part to avoid file system issues.
-                req([nonStripName], function (content) {
-                    text.finishLoad(parsed.moduleName + '.' + parsed.ext,
-                                    parsed.strip, content, onLoad);
-                });
-            }
-        },
-
-        write: function (pluginName, moduleName, write, config) {
-            if (buildMap.hasOwnProperty(moduleName)) {
-                var content = text.jsEscape(buildMap[moduleName]);
-                write.asModule(pluginName + "!" + moduleName,
-                               "define(function () { return '" +
-                                   content +
-                               "';});\n");
-            }
-        },
-
-        writeFile: function (pluginName, moduleName, req, write, config) {
-            var parsed = text.parseName(moduleName),
-                extPart = parsed.ext ? '.' + parsed.ext : '',
-                nonStripName = parsed.moduleName + extPart,
-                //Use a '.js' file name so that it indicates it is a
-                //script that can be loaded across domains.
-                fileName = req.toUrl(parsed.moduleName + extPart) + '.js';
-
-            //Leverage own load() method to load plugin value, but only
-            //write out values that do not have the strip argument,
-            //to avoid any potential issues with ! in file names.
-            text.load(nonStripName, req, function (value) {
-                //Use own write() method to construct full module value.
-                //But need to create shell that translates writeFile's
-                //write() to the right interface.
-                var textWrite = function (contents) {
-                    return write(fileName, contents);
-                };
-                textWrite.asModule = function (moduleName, contents) {
-                    return write.asModule(moduleName, fileName, contents);
-                };
-
-                text.write(pluginName, nonStripName, textWrite, config);
-            }, config);
-        }
-    };
-
-    if (masterConfig.env === 'node' || (!masterConfig.env &&
-            typeof process !== "undefined" &&
-            process.versions &&
-            !!process.versions.node &&
-            !process.versions['node-webkit'])) {
-        //Using special require.nodeRequire, something added by r.js.
-        fs = require.nodeRequire('fs');
-
-        text.get = function (url, callback, errback) {
-            try {
-                var file = fs.readFileSync(url, 'utf8');
-                //Remove BOM (Byte Mark Order) from utf8 files if it is there.
-                if (file[0] === '\uFEFF') {
-                    file = file.substring(1);
-                }
-                callback(file);
-            } catch (e) {
-                if (errback) {
-                    errback(e);
-                }
-            }
-        };
-    } else if (masterConfig.env === 'xhr' || (!masterConfig.env &&
-            text.createXhr())) {
-        text.get = function (url, callback, errback, headers) {
-            var xhr = text.createXhr(), header;
-            xhr.open('GET', url, true);
-
-            //Allow plugins direct access to xhr headers
-            if (headers) {
-                for (header in headers) {
-                    if (headers.hasOwnProperty(header)) {
-                        xhr.setRequestHeader(header.toLowerCase(), headers[header]);
-                    }
-                }
-            }
-
-            //Allow overrides specified in config
-            if (masterConfig.onXhr) {
-                masterConfig.onXhr(xhr, url);
-            }
-
-            xhr.onreadystatechange = function (evt) {
-                var status, err;
-                //Do not explicitly handle errors, those should be
-                //visible via console output in the browser.
-                if (xhr.readyState === 4) {
-                    status = xhr.status || 0;
-                    if (status > 399 && status < 600) {
-                        //An http 4xx or 5xx error. Signal an error.
-                        err = new Error(url + ' HTTP status: ' + status);
-                        err.xhr = xhr;
-                        if (errback) {
-                            errback(err);
-                        }
-                    } else {
-                        callback(xhr.responseText);
-                    }
-
-                    if (masterConfig.onXhrComplete) {
-                        masterConfig.onXhrComplete(xhr, url);
-                    }
-                }
-            };
-            xhr.send(null);
-        };
-    } else if (masterConfig.env === 'rhino' || (!masterConfig.env &&
-            typeof Packages !== 'undefined' && typeof java !== 'undefined')) {
-        //Why Java, why is this so awkward?
-        text.get = function (url, callback) {
-            var stringBuffer, line,
-                encoding = "utf-8",
-                file = new java.io.File(url),
-                lineSeparator = java.lang.System.getProperty("line.separator"),
-                input = new java.io.BufferedReader(new java.io.InputStreamReader(new java.io.FileInputStream(file), encoding)),
-                content = '';
-            try {
-                stringBuffer = new java.lang.StringBuffer();
-                line = input.readLine();
-
-                // Byte Order Mark (BOM) - The Unicode Standard, version 3.0, page 324
-                // http://www.unicode.org/faq/utf_bom.html
-
-                // Note that when we use utf-8, the BOM should appear as "EF BB BF", but it doesn't due to this bug in the JDK:
-                // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4508058
-                if (line && line.length() && line.charAt(0) === 0xfeff) {
-                    // Eat the BOM, since we've already found the encoding on this file,
-                    // and we plan to concatenating this buffer with others; the BOM should
-                    // only appear at the top of a file.
-                    line = line.substring(1);
-                }
-
-                if (line !== null) {
-                    stringBuffer.append(line);
-                }
-
-                while ((line = input.readLine()) !== null) {
-                    stringBuffer.append(lineSeparator);
-                    stringBuffer.append(line);
-                }
-                //Make sure we return a JavaScript string and not a Java string.
-                content = String(stringBuffer.toString()); //String
-            } finally {
-                input.close();
-            }
-            callback(content);
-        };
-    } else if (masterConfig.env === 'xpconnect' || (!masterConfig.env &&
-            typeof Components !== 'undefined' && Components.classes &&
-            Components.interfaces)) {
-        //Avert your gaze!
-        Cc = Components.classes;
-        Ci = Components.interfaces;
-        Components.utils['import']('resource://gre/modules/FileUtils.jsm');
-        xpcIsWindows = ('@mozilla.org/windows-registry-key;1' in Cc);
-
-        text.get = function (url, callback) {
-            var inStream, convertStream, fileObj,
-                readData = {};
-
-            if (xpcIsWindows) {
-                url = url.replace(/\//g, '\\');
-            }
-
-            fileObj = new FileUtils.File(url);
-
-            //XPCOM, you so crazy
-            try {
-                inStream = Cc['@mozilla.org/network/file-input-stream;1']
-                           .createInstance(Ci.nsIFileInputStream);
-                inStream.init(fileObj, 1, 0, false);
-
-                convertStream = Cc['@mozilla.org/intl/converter-input-stream;1']
-                                .createInstance(Ci.nsIConverterInputStream);
-                convertStream.init(inStream, "utf-8", inStream.available(),
-                Ci.nsIConverterInputStream.DEFAULT_REPLACEMENT_CHARACTER);
-
-                convertStream.readString(inStream.available(), readData);
-                convertStream.close();
-                inStream.close();
-                callback(readData.value);
-            } catch (e) {
-                throw new Error((fileObj && fileObj.path || '') + ': ' + e);
-            }
-        };
-    }
-    return text;
-});
-
-define('text!libs/mathjax_config.js',[],function () { return 'MathJax.Hub.Config({\n\tskipStartupTypeset: true,\n    "HTML-CSS": {\n        preferredFont: "TeX",\n        availableFonts: [\n            "STIX",\n            "TeX"\n        ],\n        linebreaks: {\n            automatic: true\n        },\n        EqnChunk: 10,\n        imageFont: null\n    },\n    tex2jax: <%= tex2jax || \'{ inlineMath: [["$","$"],["\\\\\\\\\\\\\\\\(","\\\\\\\\\\\\\\\\)"]], displayMath: [["$$","$$"],["\\\\\\\\[","\\\\\\\\]"]], processEscapes: true }\' %>,\n    TeX: $.extend({\n        noUndefined: {\n            attributes: {\n                mathcolor: "red",\n                mathbackground: "#FFEEEE",\n                mathsize: "90%"\n            }\n        },\n        Safe: {\n            allow: {\n                URLs: "safe",\n                classes: "safe",\n                cssIDs: "safe",\n                styles: "safe",\n                fontsize: "all"\n            }\n        }\n    }, <%= tex %>),\n    messageStyle: "none"\n});\n';});
-
 define('libs/mathjax_init',[
     "settings",
-    "text!libs/mathjax_config.js"
-], function(settings, mathjaxConfigJS) {
+    // "ext!libs/mathjax_config.js"
+], function(settings/*, mathjaxConfigJS*/) {
     var script = document.createElement('script');
     script.type = 'text/x-mathjax-config';
+    var mathjaxConfigJS = 'MathJax.Hub.Config({\n\tskipStartupTypeset: true,\n    "HTML-CSS": {\n        preferredFont: "TeX",\n        availableFonts: [\n            "STIX",\n            "TeX"\n        ],\n        linebreaks: {\n            automatic: true\n        },\n        EqnChunk: 10,\n        imageFont: null\n    },\n    tex2jax: <%= tex2jax || \'{ inlineMath: [["$","$"],["\\\\\\\\\\\\\\\\(","\\\\\\\\\\\\\\\\)"]], displayMath: [["$$","$$"],["\\\\\\\\[","\\\\\\\\]"]], processEscapes: true }\' %>,\n    TeX: $.extend({\n        noUndefined: {\n            attributes: {\n                mathcolor: "red",\n                mathbackground: "#FFEEEE",\n                mathsize: "90%"\n            }\n        },\n        Safe: {\n            allow: {\n                URLs: "safe",\n                classes: "safe",\n                cssIDs: "safe",\n                styles: "safe",\n                fontsize: "all"\n            }\n        }\n    }, <%= tex %>),\n    messageStyle: "none"\n});\n';
     script.innerHTML = _.template(mathjaxConfigJS, {
         tex: settings.extensionSettings.mathJax ? settings.extensionSettings.mathJax.tex : 'undefined',
         tex2jax: settings.extensionSettings.mathJax ? settings.extensionSettings.mathJax.tex2jax : undefined
@@ -15032,7 +14640,7 @@ define('libs/mathjax_init',[
 define('extensions/mathJax',[
 	"utils",
 	"classes/Extension",
-	// "text!html/mathJaxSettingsBlock.html",
+	// "ext!html/mathJaxSettingsBlock.html",
 	"mathjax"
 ], function(utils, Extension) {
 
@@ -15321,7 +14929,7 @@ define('extensions/partialRendering',[
 	"crel",
 	"extensions/markdownExtra",
 	"classes/Extension",
-	// "text!html/partialRenderingSettingsBlock.html",
+	// "ext!html/partialRenderingSettingsBlock.html",
 ], function(_, crel, markdownExtra, Extension) {
 
 	var partialRendering = new Extension("partialRendering", "Partial Rendering", true);
@@ -25239,7 +24847,7 @@ define('extensions/umlDiagrams',[
 	"utils",
 	"logger",
 	"classes/Extension",
-	// "text!html/umlDiagramsSettingsBlock.html",
+	// "ext!html/umlDiagramsSettingsBlock.html",
 	'crel',
 	'Diagram',
 	'flow-chart'
@@ -25307,7 +24915,7 @@ define('extensions/toc',[
     "underscore",
     "utils",
     "classes/Extension",
-    // "text!html/tocSettingsBlock.html",
+    // "ext!html/tocSettingsBlock.html",
 ], function(_, utils, Extension) {
 
     var toc = new Extension("toc", "Table of Contents", true);
@@ -25494,7 +25102,7 @@ define('extensions/scrollSync',[
 	// "jquery",
 	"underscore",
 	"classes/Extension"
-	// "text!html/scrollSyncSettingsBlock.html"
+	// "ext!html/scrollSyncSettingsBlock.html"
 ], function(_, Extension) {
 
 	var scrollSync = new Extension("scrollSync", "Scroll Sync", true, true);
@@ -25906,8 +25514,8 @@ define('extensions/findReplace',[
 	"classes/Extension",
 	"mousetrap",
 	"rangy",
-	// "text!html/findReplace.html",
-	// "text!html/findReplaceSettingsBlock.html"
+	// "ext!html/findReplace.html",
+	// "ext!html/findReplaceSettingsBlock.html"
 ], function(_, crel, utils, Extension, mousetrap, rangy) {
 
 	var findReplaceHTML = '<button type="button" class="close button-find-replace-dismiss">×</button>\n<div class="form-inline">\n    <div class="form-group">\n        <label for="input-find-replace-search-for">Search for</label>\n        <input class="form-control" id="input-find-replace-search-for" placeholder="Search for">\n    </div>\n    <div class="form-group">\n        <label for="input-find-replace-replace-with">Replace with</label>\n        <input class="form-control" id="input-find-replace-replace-with" placeholder="Replace with">\n    </div>\n</div>\n<div class="pull-right">\n    <div class="help-block text-right">\n        <span class="found-counter">0</span> found\n    </div>\n    <div>\n        <button type="button" class="btn btn-primary search-button">Search</button>\n        <button type="button" class="btn btn-default replace-button">Replace</button>\n        <button type="button" class="btn btn-default replace-all-button">All</button>\n    </div>\n</div>\n<div class="pull-left">\n    <div class="checkbox">\n        <label>\n            <input type="checkbox" class="checkbox-case-sensitive"> Case sensitive\n        </label>\n    </div>\n    <div class="checkbox">\n        <label>\n            <input type="checkbox" class="checkbox-regexp"> Regular expression\n        </label>\n    </div>\n</div>\n';
@@ -26171,7 +25779,7 @@ define('extensions/htmlSanitizer',[
 	"utils",
 	"logger",
 	"classes/Extension",
-	// "text!html/htmlSanitizerSettingsBlock.html"
+	// "ext!html/htmlSanitizerSettingsBlock.html"
 ], function(_, utils, logger, Extension) {
 
 	var htmlSanitizer = new Extension("htmlSanitizer", "HTML Sanitizer", true);
@@ -26933,6 +26541,7 @@ define('eventMgr',[
 	addEventHook("onTweet");
 
 
+	// onPreviewFinished 触发 scrollSync
 	var onPreviewFinished = createEventHook("onPreviewFinished");
 	var onAsyncPreviewListenerList = getExtensionListenerList("onAsyncPreview");
 	var previewContentsElt;
@@ -26956,6 +26565,8 @@ define('eventMgr',[
 			});
 		}
 
+		// recursiveCall(onAsyncPreviewListenerList);
+		// 加载图片后才会触发onPreviewFinished, 因为offsetTop()会有影响, 所以, 必须要在图片加载完成才触发
 		recursiveCall(onAsyncPreviewListenerList.concat([
 			function(callback) {
 				// We assume some images are loading asynchronously after the preview
@@ -34445,171 +34056,6 @@ define('core',[
 	return core;
 });
 
-/*
- * Require-CSS RequireJS css! loader plugin
- * 0.1.2
- * Guy Bedford 2013
- * MIT
- */
-
-/*
- *
- * Usage:
- *  require(['css!./mycssFile']);
- *
- * Tested and working in (up to latest versions as of March 2013):
- * Android
- * iOS 6
- * IE 6 - 10
- * Chome 3 - 26
- * Firefox 3.5 - 19
- * Opera 10 - 12
- * 
- * browserling.com used for virtual testing environment
- *
- * Credit to B Cavalier & J Hann for the IE 6 - 9 method,
- * refined with help from Martin Cermak
- * 
- * Sources that helped along the way:
- * - https://developer.mozilla.org/en-US/docs/Browser_detection_using_the_user_agent
- * - http://www.phpied.com/when-is-a-stylesheet-really-loaded/
- * - https://github.com/cujojs/curl/blob/master/src/curl/plugin/css.js
- *
- */
-
-define('css/css',[],function() {
-  if (typeof window == 'undefined')
-    return { load: function(n, r, load){ load() } };
-
-  var head = document.getElementsByTagName('head')[0];
-
-  var engine = window.navigator.userAgent.match(/Trident\/([^ ;]*)|AppleWebKit\/([^ ;]*)|Opera\/([^ ;]*)|rv\:([^ ;]*)(.*?)Gecko\/([^ ;]*)|MSIE\s([^ ;]*)/) || 0;
-
-  // use <style> @import load method (IE < 9, Firefox < 18)
-  var useImportLoad = false;
-  
-  // set to false for explicit <link> load checking when onload doesn't work perfectly (webkit)
-  var useOnload = true;
-
-  // trident / msie
-  if (engine[1] || engine[7])
-    useImportLoad = parseInt(engine[1]) < 6 || parseInt(engine[7]) <= 9;
-  // webkit
-  else if (engine[2])
-    useOnload = false;
-  // gecko
-  else if (engine[4])
-    useImportLoad = parseInt(engine[4]) < 18;
-  
-  //main api object
-  var cssAPI = {};
-
-  cssAPI.pluginBuilder = './css-builder';
-
-  // <style> @import load method
-  var curStyle, curSheet;
-  var createStyle = function () {
-    curStyle = document.createElement('style');
-    head.appendChild(curStyle);
-    curSheet = curStyle.styleSheet || curStyle.sheet;
-  }
-  var ieCnt = 0;
-  var ieLoads = [];
-  var ieCurCallback;
-  
-  var createIeLoad = function(url) {
-    ieCnt++;
-    if (ieCnt == 32) {
-      createStyle();
-      ieCnt = 0;
-    }
-    curSheet.addImport(url);
-    curStyle.onload = function(){ processIeLoad() };
-  }
-  var processIeLoad = function() {
-    ieCurCallback();
- 
-    var nextLoad = ieLoads.shift();
- 
-    if (!nextLoad) {
-      ieCurCallback = null;
-      return;
-    }
- 
-    ieCurCallback = nextLoad[1];
-    createIeLoad(nextLoad[0]);
-  }
-  var importLoad = function(url, callback) {
-    if (!curSheet || !curSheet.addImport)
-      createStyle();
-
-    if (curSheet && curSheet.addImport) {
-      // old IE
-      if (ieCurCallback) {
-        ieLoads.push([url, callback]);
-      }
-      else {
-        createIeLoad(url);
-        ieCurCallback = callback;
-      }
-    }
-    else {
-      // old Firefox
-      curStyle.textContent = '@import "' + url + '";';
-
-      var loadInterval = setInterval(function() {
-        try {
-          curStyle.sheet.cssRules;
-          clearInterval(loadInterval);
-          callback();
-        } catch(e) {}
-      }, 10);
-    }
-  }
-
-  // <link> load method
-  var linkLoad = function(url, callback) {
-    var link = document.createElement('link');
-    link.type = 'text/css';
-    link.rel = 'stylesheet';
-    if (useOnload)
-      link.onload = function() {
-        link.onload = function() {};
-        // for style dimensions queries, a short delay can still be necessary
-        setTimeout(callback, 7);
-      }
-    else
-      var loadInterval = setInterval(function() {
-        for (var i = 0; i < document.styleSheets.length; i++) {
-          var sheet = document.styleSheets[i];
-          if (sheet.href == link.href) {
-            clearInterval(loadInterval);
-            return callback();
-          }
-        }
-      }, 10);
-    link.href = url;
-    head.appendChild(link);
-  }
-
-  cssAPI.normalize = function(name, normalize) {
-    if (name.substr(name.length - 4, 4) == '.css')
-      name = name.substr(0, name.length - 4);
-
-    return normalize(name);
-  }
-
-  cssAPI.load = function(cssId, req, load, config) {
-
-    (useImportLoad ? importLoad : linkLoad)(req.toUrl(cssId + '.css'), load);
-
-  }
-
-  return cssAPI;
-});
-
-define('css', ['css/css'], function (main) { return main; });
-
 /**
  * @license CSS Class Applier module for Rangy.
  * Adds, removes and toggles CSS classes on Ranges and Selections
@@ -35331,6 +34777,7 @@ define("rangy-cssclassapplier", function(){});
 requirejs.config({
 	waitSeconds: 0,
 	packages: [
+		/*
 		{
 			name: 'css',
 			location: 'bower-libs/require-css',
@@ -35341,6 +34788,7 @@ requirejs.config({
 			location: 'bower-libs/require-less',
 			main: 'less'
 		}
+		*/
 	],
 	paths: {
 		// jquery: 'bower-libs/jquery/jquery',
@@ -35352,24 +34800,24 @@ requirejs.config({
 		toMarkdown: 'bower-libs/to-markdown/src/to-markdown',
 		text: 'bower-libs/requirejs-text/text',
 		mathjax: 'libs/MathJax/MathJax.js?config=TeX-AMS_HTML',
-		bootstrap: 'bower-libs/bootstrap/dist/js/bootstrap',
+		// bootstrap: 'bower-libs/bootstrap/dist/js/bootstrap',
 		requirejs: 'bower-libs/requirejs/require',
 		'google-code-prettify': 'bower-libs/google-code-prettify/src/prettify',
 		highlightjs: 'libs/highlight/highlight.pack',
 		'jquery-waitforimages': 'bower-libs/waitForImages/src/jquery.waitforimages',
-		FileSaver: 'bower-libs/FileSaver/FileSaver',
-		stacktrace: 'bower-libs/stacktrace/stacktrace',
-		'requirejs-text': 'bower-libs/requirejs-text/text',
-		'bootstrap-tour': 'bower-libs/bootstrap-tour/build/js/bootstrap-tour',
+		// FileSaver: 'bower-libs/FileSaver/FileSaver',
+		// stacktrace: 'bower-libs/stacktrace/stacktrace',
+		// 'requirejs-text': 'bower-libs/requirejs-text/text',
+		// 'bootstrap-tour': 'bower-libs/bootstrap-tour/build/js/bootstrap-tour',
 		css_browser_selector: 'bower-libs/css_browser_selector/css_browser_selector',
 		'pagedown-extra': 'bower-libs/pagedown-extra/node-pagedown-extra',
 		pagedownExtra: 'bower-libs/pagedown-extra/Markdown.Extra',
 		pagedown: 'libs/Markdown.Editor',
 		// 'require-css': 'bower-libs/require-css/css',
 		xregexp: 'bower-libs/xregexp/xregexp-all',
-		yaml: 'bower-libs/yaml.js/bin/yaml',
-		'yaml.js': 'bower-libs/yaml.js',
-		'yaml-js': 'bower-libs/yaml.js/bin/yaml',
+		// yaml: 'bower-libs/yaml.js/bin/yaml',
+		// 'yaml.js': 'bower-libs/yaml.js',
+		// 'yaml-js': 'bower-libs/yaml.js/bin/yaml',
 		// css: 'bower-libs/require-css/css',
 		// 'css-builder': 'bower-libs/require-css/css-builder',
 		normalize: 'bower-libs/require-css/normalize',
@@ -35381,14 +34829,14 @@ requirejs.config({
 		'rangy-cssclassapplier': 'bower-libs/rangy/rangy-cssclassapplier',
 		diff_match_patch: 'bower-libs/google-diff-match-patch-js/diff_match_patch',
 		diff_match_patch_uncompressed: 'bower-libs/google-diff-match-patch-js/diff_match_patch_uncompressed',
-		jsondiffpatch: 'bower-libs/jsondiffpatch/build/bundle',
+		// jsondiffpatch: 'bower-libs/jsondiffpatch/build/bundle',
 		hammerjs: 'bower-libs/hammerjs/hammer',
 		Diagram: 'bower-libs/js-sequence-diagrams/src/sequence-diagram',
 		'diagram-grammar': 'bower-libs/js-sequence-diagrams/build/diagram-grammar',
 		raphael: 'bower-libs/raphael/raphael',
 		'flow-chart': 'bower-libs/flowchart/release/flowchart.amd-1.3.4.min',
 		flowchart: 'bower-libs/flowchart/release/flowchart-1.3.4.min',
-		monetizejs: 'bower-libs/monetizejs/src/monetize',
+		// monetizejs: 'bower-libs/monetizejs/src/monetize',
 		waitForImages: 'bower-libs/waitForImages/dist/jquery.waitforimages',
 		MathJax: '../libs/MathJax/MathJax'
 	},
@@ -35408,9 +34856,9 @@ requirejs.config({
 		diff_match_patch_uncompressed: {
 			exports: 'diff_match_patch'
 		},
-		jsondiffpatch: [
-			'diff_match_patch_uncompressed'
-		],
+		// jsondiffpatch: [
+		// 	'diff_match_patch_uncompressed'
+		// ],
 		rangy: {
 			exports: 'rangy'
 		},
@@ -35420,9 +34868,9 @@ requirejs.config({
 		mousetrap: {
 			exports: 'Mousetrap'
 		},
-		'yaml-js': {
-			exports: 'YAML'
-		},
+		// 'yaml-js': {
+		// 	exports: 'YAML'
+		// },
 		'prism-core': {
 			exports: 'Prism'
 		},
@@ -35436,15 +34884,15 @@ requirejs.config({
 			'bower-libs/prism/components/prism-markup',
 			'libs/prism-latex'
 		],
-		'bootstrap-record': [
-			'mousetrap'
-		],
-		stacktrace: {
-			exports: 'printStackTrace'
-		},
-		FileSaver: {
-			exports: 'saveAs'
-		},
+		// 'bootstrap-record': [
+		// 	'mousetrap'
+		// ],
+		// stacktrace: {
+		// 	exports: 'printStackTrace'
+		// },
+		// FileSaver: {
+		// 	exports: 'saveAs'
+		// },
 		MutationObservers: [
 			'WeakMap'
 		],
@@ -35474,14 +34922,12 @@ requirejs.config({
 
 window.viewerMode = false;
 // Keep the theme in a global variable
-window.theme = 'default';
+// window.theme = 'default';
 
 window.getMsg || (getMsg = function(msg) {
 	return msg;
 });
 
-// RequireJS entry point. By requiring synchronizer, publisher, sharing and
-// media-importer, we are actually loading all the modules
 require([
 	// "jquery",
 	"rangy",
@@ -35491,13 +34937,10 @@ require([
 	// "publisher",
 	// "sharing",
 	// "mediaImporter",
-	"css",
+	// "css",
 	"rangy-cssclassapplier"
 	// ,themeModule // 生产模式
 ], function( rangy, core) {
-	if(window.noStart) {
-		return;
-	}
 	$(function() {
 		rangy.init();
 		// Here, all the modules are loaded and the DOM is ready
