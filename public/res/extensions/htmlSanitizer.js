@@ -31,8 +31,8 @@ define([
 	 * License: MIT
 	 */
 
-	var aHrefSanitizationWhitelist = /^\s*(https?|ftp|mailto|tel|file):/,
-		imgSrcSanitizationWhitelist = /^\s*(https?|ftp|file):|data:image\//;
+	var aHrefSanitizationWhitelist = /^\s*(https?|ftp|mailto|tel|file|leanote):/,
+		imgSrcSanitizationWhitelist = /^\s*(https?|ftp|file|leanote):|data:image\//;
 
 	function sanitizeUri(uri, isImage) {
 		var regex = isImage ? imgSrcSanitizationWhitelist : aHrefSanitizationWhitelist;
