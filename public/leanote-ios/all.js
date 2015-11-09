@@ -30420,12 +30420,12 @@ define('editor',[
 	var isComposing = 0;
 	eventMgr.addListener('onSectionsCreated', function(newSectionList) {
 		// console.trace('onSectionsCreated ==> ' + isComposing);
+		// ios markdown不能注释!!
 		// isComposing = 0;
-		// if(!isComposing) {
-			// 总执行这个
+		if(!isComposing) {
 			updateSectionList(newSectionList);
 			highlightSections();
-		// }
+		}
 		if(fileChanged === true) {
 			// Refresh preview synchronously
 			pagedownEditor.refreshPreview();
@@ -31357,9 +31357,9 @@ define('editor',[
 			.on('compositionend', function(e) {
 				// console.log('compositionend !!')
 				// console.log(e);
-				// setTimeout(function() {
+				setTimeout(function() {
 					isComposing--;
-				// }, 0);
+				}, 0);
 			})
 			.on('mouseup', _.bind(selectionMgr.saveSelectionState, selectionMgr, true, false))
 			.on('paste', function(evt) {
@@ -35373,14 +35373,21 @@ var LEAMD = {
 
         // 所有image
         var allImages = [];
+        var curIndex = 0;
+        var curElem = $(this).get(0);
+        var i = 0;
         $('#preview-contents img').each(function() {
-          var url = $(this).attr('src')
+          var url = $(this).attr('src');
           if(url) {
             allImages.push(url);
+            if ($(this).get(0) == curElem) {
+              curIndex = i;
+            }
+            i++;
           }
         });
 
-        allImages.push(src);
+        allImages.push(curIndex);
         callObjc('callback-image-tap:id=0~url=' + allImages.join('L$L')); //  + '~meta='
       }
       else {

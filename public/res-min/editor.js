@@ -147,14 +147,21 @@ var LEAMD = {
 
         // 所有image
         var allImages = [];
+        var curIndex = 0;
+        var curElem = $(this).get(0);
+        var i = 0;
         $('#preview-contents img').each(function() {
-          var url = $(this).attr('src')
+          var url = $(this).attr('src');
           if(url) {
             allImages.push(url);
+            if ($(this).get(0) == curElem) {
+              curIndex = i;
+            }
+            i++;
           }
         });
 
-        allImages.push(src);
+        allImages.push(curIndex);
         callObjc('callback-image-tap:id=0~url=' + allImages.join('L$L')); //  + '~meta='
       }
       else {

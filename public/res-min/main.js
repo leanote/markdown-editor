@@ -30261,12 +30261,12 @@ define('editor',[
 	var isComposing = 0;
 	eventMgr.addListener('onSectionsCreated', function(newSectionList) {
 		// console.trace('onSectionsCreated ==> ' + isComposing);
+		// ios markdown不能注释!!
 		// isComposing = 0;
-		// if(!isComposing) {
-			// 总执行这个
+		if(!isComposing) {
 			updateSectionList(newSectionList);
 			highlightSections();
-		// }
+		}
 		if(fileChanged === true) {
 			// Refresh preview synchronously
 			pagedownEditor.refreshPreview();
@@ -31198,9 +31198,9 @@ define('editor',[
 			.on('compositionend', function(e) {
 				// console.log('compositionend !!')
 				// console.log(e);
-				// setTimeout(function() {
+				setTimeout(function() {
 					isComposing--;
-				// }, 0);
+				}, 0);
 			})
 			.on('mouseup', _.bind(selectionMgr.saveSelectionState, selectionMgr, true, false))
 			.on('paste', function(evt) {
