@@ -557,6 +557,7 @@ define([
 
 	editor.focus = focus;
 
+	// 历史记录
 	function UndoMgr() {
 		var undoStack = [];
 		var redoStack = [];
@@ -1210,7 +1211,8 @@ define([
 	function highlight(section) {
 		var text = escape(section.text);
 
-		if(!window.viewerMode) {
+		// MDPureText 不用Prism
+		if(!window.LEAMDPureText) {
 			// log("pre")
 			// log(text);
 			// # lif
