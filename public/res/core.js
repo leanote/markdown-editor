@@ -69,6 +69,14 @@ define([
 	        // strings: "Markdown syntax"
 		});
 
+		MD.pagedownEditor = pagedownEditor;
+		// 重置undo
+		// 11/12
+		MD.clearUndo = function () {
+			MD.undoMgr.init();
+			MD.pagedownEditor.uiManager.setUndoRedoButtonStates();
+		};
+
 		MD.insertLink2 = pagedownEditor.insertLink;
 
 		// Custom insert link dialog
