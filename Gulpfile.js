@@ -319,15 +319,6 @@ var markdownMin = './public/leanote-ios';
 var concat = require('gulp-concat');
 var minifyHtml = require("gulp-minify-html");
 
-// min main.js, 无用
-gulp.task('jsmin', function() {
-    return gulp
-        .src(markdownRaw + '/main.js')
-        .pipe(uglify())
-        .pipe(rename({ suffix: '.min' }))
-        .pipe(gulp.dest(markdownMin));
-});
-
 // 合并Js
 gulp.task('concatJs', function() {
     return gulp
@@ -368,5 +359,30 @@ gulp.task('htmlMarkdown', function() {
         .pipe(gulp.dest(markdownMin));
 });
 
+var leanoteiOs = '/Users/life/Documents/kuaipan/leanote/leanote-ios/Leanote/editor/'; // MarkdownAssetsRaw 
+
+gulp.task('cpToiOSDev', function() {
+	gulp
+        .src(markdownRaw + '/css/*')
+        .pipe(gulp.dest(leanoteiOs + '/MarkdownAssetsRaw/css/'));
+
+	gulp
+        .src(markdownRaw + '/editor-mobile.html')
+        .pipe(gulp.dest(leanoteiOs + '/MarkdownAssetsRaw/'));
+
+    return gulp
+        .src(markdownRaw + '/res-min/**/*')
+        .pipe(gulp.dest(leanoteiOs + '/MarkdownAssetsRaw/res-min'));
+});
+
+gulp.task('cpToiOSRelease', function() {
+    return gulp
+        .src(markdownRaw + '/leanote-ios/**/*')
+        .pipe(gulp.dest(leanoteiOs + '/MarkdownAssets/'));
+});
+
 gulp.task('concatMarkdown', ['concatJs', 'concatCss']);
 gulp.task('minify', ['concatMarkdown', 'htmlMarkdown', 'copyLibs']);
+
+// 将代码复制到leanote-ios仓库
+gulp.task('ios', ['cpToiOSDev', 'cpToiOSRelease']);

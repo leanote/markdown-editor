@@ -4,13 +4,13 @@ define([
 	"crel",
 	"editor",
 	// "layout",
-	"constants",
+	// "constants",
 	"utils",
-	"storage",
+	// "storage",
 	"settings",
 	"eventMgr",
 	'pagedown'
-], function( _, crel, editor, constants, utils, storage, settings, eventMgr) {
+], function( _, crel, editor, utils, settings, eventMgr) {
 
 	var core = {};
 

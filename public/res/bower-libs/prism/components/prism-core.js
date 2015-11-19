@@ -332,7 +332,6 @@ Token.stringify = function(o, language, parent) {
         env.tag = 'p';
     }
     return '<' + env.tag + ' class="hehe ' + env.classes.join(' ') + '" ' + attributes + '>' + env.content + '</' + env.tag + '>';
-	
 };
 
 if (!self.document) {

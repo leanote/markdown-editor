@@ -1,4 +1,3 @@
-
 var MDInited = false;
 
 function setEditorContent(content) {
@@ -133,6 +132,11 @@ var LEAMD = {
   // 绑定事件
   init: function() {
 
+    this.isiPad = (navigator.userAgent.match(/iPad/i) != null);
+    if (this.isiPad) {
+        $(document.body).addClass('ipad-body');
+    }
+    
     // tap事件
     tapLea('#preview-contents', 'img, a', function() {
       if($(this).is('img')) {
@@ -143,15 +147,22 @@ var LEAMD = {
 
         // 所有image
         var allImages = [];
+        var curIndex = 0;
+        var curElem = $(this).get(0);
+        var i = 0;
         $('#preview-contents img').each(function() {
-          var url = $(this).attr('src')
+          var url = $(this).attr('src');
           if(url) {
             allImages.push(url);
+            if ($(this).get(0) == curElem) {
+              curIndex = i;
+            }
+            i++;
           }
         });
 
-        allImages.push(src);
-        callObjc('callback-image-tap:id=0~url=' + allImages.join(',')); //  + '~meta='
+        allImages.push(curIndex);
+        callObjc('callback-image-tap:id=0~url=' + allImages.join('L$L')); //  + '~meta='
       }
       else {
         var href = $(this).attr('href');
@@ -470,9 +481,14 @@ ZSSEditor.getSelectedText = function() {
 ZSSEditor.logMainElementSizes = function() {};
 
 // life test
-if(isDebug) {
+if(isDebug || isDebugIPad) {
   titleField.enableEditing();
   contentField.enableEditing();
   var content = $('#life').val();
   setEditorContent(content);
+
+  titleField.setHTML("你好啊 hello world");
+}
+if (isDebugIPad) {
+  $('body').addClass('ipad-body');
 }
