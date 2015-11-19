@@ -33916,7 +33916,7 @@ define('core',[
 		$("#wmd-ulist-button").append($('<i class="fa fa-list-ul">')).appendTo($btnGroupElt);
 		$("#wmd-heading-button").append($('<i class="fa fa-header">')).appendTo($btnGroupElt);
 		$("#wmd-hr-button").append($('<i class="fa fa-ellipsis-h">')).appendTo($btnGroupElt);
-		$btnGroupElt = $('.wmd-button-group5');
+		$btnGroupElt = $('.wmd-button-group4');
 		$("#wmd-undo-button").append($('<i class="fa fa-undo">')).appendTo($btnGroupElt);
 		$("#wmd-redo-button").append($('<i class="fa fa-repeat">')).appendTo($btnGroupElt);
 		$("#wmd-help-button").show();
@@ -34813,7 +34813,7 @@ requirejs.config({
 		// bootstrap: 'bower-libs/bootstrap/dist/js/bootstrap',
 		requirejs: 'bower-libs/requirejs/require',
 		'google-code-prettify': 'bower-libs/google-code-prettify/src/prettify',
-		highlightjs: 'libs/highlight/highlight.pack',
+		// highlightjs: 'libs/highlight/highlight.pack',
 		'jquery-waitforimages': 'bower-libs/waitForImages/src/jquery.waitforimages',
 		// FileSaver: 'bower-libs/FileSaver/FileSaver',
 		// stacktrace: 'bower-libs/stacktrace/stacktrace',
@@ -34906,9 +34906,9 @@ requirejs.config({
 		MutationObservers: [
 			'WeakMap'
 		],
-		highlightjs: {
-			exports: 'hljs'
-		},
+		// highlightjs: {
+		// 	exports: 'hljs'
+		// },
 		'jquery-waitforimages': [
 		],
 		pagedown: [

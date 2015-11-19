@@ -29,7 +29,7 @@ requirejs.config({
 		// bootstrap: 'bower-libs/bootstrap/dist/js/bootstrap',
 		requirejs: 'bower-libs/requirejs/require',
 		'google-code-prettify': 'bower-libs/google-code-prettify/src/prettify',
-		highlightjs: 'libs/highlight/highlight.pack',
+		// highlightjs: 'libs/highlight/highlight.pack',
 		'jquery-waitforimages': 'bower-libs/waitForImages/src/jquery.waitforimages',
 		// FileSaver: 'bower-libs/FileSaver/FileSaver',
 		// stacktrace: 'bower-libs/stacktrace/stacktrace',
@@ -122,9 +122,9 @@ requirejs.config({
 		MutationObservers: [
 			'WeakMap'
 		],
-		highlightjs: {
-			exports: 'hljs'
-		},
+		// highlightjs: {
+		// 	exports: 'hljs'
+		// },
 		'jquery-waitforimages': [
 		],
 		pagedown: [
