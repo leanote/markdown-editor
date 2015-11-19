@@ -4,13 +4,13 @@ define([
 	"crel",
 	"editor",
 	// "layout",
-	"constants",
+	// "constants",
 	"utils",
-	"storage",
+	// "storage",
 	"settings",
 	"eventMgr",
 	'pagedown'
-], function( _, crel, editor, constants, utils, storage, settings, eventMgr) {
+], function( _, crel, editor, utils, settings, eventMgr) {
 
 	var core = {};
 
@@ -69,7 +69,15 @@ define([
 	        // strings: "Markdown syntax"
 		});
 
-		MD.insertLink2 = pagedownEditor.insertLink;
+		MD.pagedownEditor = pagedownEditor;
+        // 重置undo
+        // 11/12
+        MD.clearUndo = function () {
+            MD.undoMgr.init();
+            MD.pagedownEditor.uiManager.setUndoRedoButtonStates();
+        };
+
+        MD.insertLink2 = pagedownEditor.insertLink;
 
 		// Custom insert link dialog
 		pagedownEditor.hooks.set("insertLinkDialog", function(callback) {

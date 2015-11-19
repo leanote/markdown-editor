@@ -4,11 +4,11 @@ define([
 	"utils",
 	"logger",
 	"classes/Extension",
-	"text!html/htmlSanitizerSettingsBlock.html"
-], function(_, utils, logger, Extension, htmlSanitizerSettingsBlockHTML) {
+	// "ext!html/htmlSanitizerSettingsBlock.html"
+], function(_, utils, logger, Extension) {
 
 	var htmlSanitizer = new Extension("htmlSanitizer", "HTML Sanitizer", true);
-	htmlSanitizer.settingsBlock = htmlSanitizerSettingsBlockHTML;
+	// htmlSanitizer.settingsBlock = htmlSanitizerSettingsBlockHTML;
 
 	var buf;
 	htmlSanitizer.onPagedownConfigure = function(editor) {
@@ -31,8 +31,8 @@ define([
 	 * License: MIT
 	 */
 
-	var aHrefSanitizationWhitelist = /^\s*(https?|ftp|mailto|tel|file):/,
-		imgSrcSanitizationWhitelist = /^\s*(https?|ftp|file):|data:image\//;
+	var aHrefSanitizationWhitelist = /^\s*(https?|ftp|mailto|tel|file|leanote):/,
+		imgSrcSanitizationWhitelist = /^\s*(https?|ftp|file|leanote):|data:image\//;
 
 	function sanitizeUri(uri, isImage) {
 		var regex = isImage ? imgSrcSanitizationWhitelist : aHrefSanitizationWhitelist;

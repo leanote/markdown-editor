@@ -3,11 +3,11 @@ define([
 	"crel",
 	"extensions/markdownExtra",
 	"classes/Extension",
-	"text!html/partialRenderingSettingsBlock.html",
-], function(_, crel, markdownExtra, Extension, partialRenderingSettingsBlockHTML) {
+	// "ext!html/partialRenderingSettingsBlock.html",
+], function(_, crel, markdownExtra, Extension) {
 
 	var partialRendering = new Extension("partialRendering", "Partial Rendering", true);
-	partialRendering.settingsBlock = partialRenderingSettingsBlockHTML;
+	// partialRendering.settingsBlock = partialRenderingSettingsBlockHTML;
 
 	var converter;
 	var doFootnotes = false;
