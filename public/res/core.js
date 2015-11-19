@@ -4,13 +4,13 @@ define([
 	"crel",
 	"editor",
 	// "layout",
-	"constants",
+	// "constants",
 	"utils",
-	"storage",
+	// "storage",
 	"settings",
 	"eventMgr",
 	'pagedown'
-], function( _, crel, editor, constants, utils, storage, settings, eventMgr) {
+], function( _, crel, editor, utils, settings, eventMgr) {
 
 	var core = {};
 
@@ -69,6 +69,14 @@ define([
 	        // strings: "Markdown syntax"
 		});
 
+		MD.pagedownEditor = pagedownEditor;
+		// 重置undo
+		// 11/12
+		MD.clearUndo = function () {
+			MD.undoMgr.init();
+			MD.pagedownEditor.uiManager.setUndoRedoButtonStates();
+		};
+
 		MD.insertLink2 = pagedownEditor.insertLink;
 
 		// Custom insert link dialog
@@ -117,7 +125,7 @@ define([
 		$("#wmd-ulist-button").append($('<i class="fa fa-list-ul">')).appendTo($btnGroupElt);
 		$("#wmd-heading-button").append($('<i class="fa fa-header">')).appendTo($btnGroupElt);
 		$("#wmd-hr-button").append($('<i class="fa fa-ellipsis-h">')).appendTo($btnGroupElt);
-		$btnGroupElt = $('.wmd-button-group5');
+		$btnGroupElt = $('.wmd-button-group4');
 		$("#wmd-undo-button").append($('<i class="fa fa-undo">')).appendTo($btnGroupElt);
 		$("#wmd-redo-button").append($('<i class="fa fa-repeat">')).appendTo($btnGroupElt);
 		$("#wmd-help-button").show();

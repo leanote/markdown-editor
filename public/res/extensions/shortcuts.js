@@ -3,16 +3,10 @@ define([
 	"underscore",
 	"utils",
 	"mousetrap",
-	"classes/Extension",
-	"text!extensions/shortcutsDefaultMapping.settings",
-	"text!html/shortcutsSettingsBlock.html",
-	"text!html/tooltipSettingsShortcutsExtension.html"
-], function(_, utils, mousetrap, Extension, shortcutsDefaultMapping, shortcutsSettingsBlockHTML, tooltipSettingsShortcutsExtensionHTML) {
-
+	"classes/Extension"
+], function(_, utils, mousetrap, Extension, shortcutsDefaultMapping) {
 	var shortcuts = new Extension("shortcuts", "Shortcuts", true, true);
-	shortcuts.settingsBlock = shortcutsSettingsBlockHTML;
 	shortcuts.defaultConfig = {
-		mapping: shortcutsDefaultMapping
 	};
 
 	var eventMgr;
@@ -22,23 +16,6 @@ define([
 		eventMgr.addListener('onPagedownConfigure', function(pagedownEditorParam) {
 			pagedownEditor = pagedownEditorParam;
 		});
-	};
-
-	shortcuts.onLoadSettings = function() {
-		utils.setInputValue("#textarea-shortcuts-mapping", shortcuts.config.mapping);
-	};
-
-	shortcuts.onSaveSettings = function(newConfig, event) {
-		newConfig.code = utils.getInputValue("#textarea-shortcuts-mapping");
-		try {
-			/*jshint evil: true */
-			eval('var test = ' + newConfig.code);
-		}
-		catch(e) {
-			eventMgr.onError(e);
-			// Mark the textarea as error
-			utils.getInputTextValue("#textarea-shortcuts-mapping", event, /^$/);
-		}
 	};
 
 	/*jshint unused:false */
@@ -56,7 +33,6 @@ define([
 	}
 
 	/*
-	
     'mod+b': bindPagedownButton('bold'),
     'mod+i': bindPagedownButton('italic'),
     'mod+l': bindPagedownButton('link'),
@@ -96,8 +72,34 @@ define([
 			};
 
 			var shortcutMap;
-			/*jshint evil: true */
-			eval('shortcutMap = ' + shortcuts.config.mapping);
+            var shortcutMap = {
+                    'mod+b': bindPagedownButton('bold'),
+                    'mod+i': bindPagedownButton('italic'),
+                    'mod+l': bindPagedownButton('link'),
+                    'mod+q': bindPagedownButton('quote'),
+                    'mod+k': bindPagedownButton('code'),
+                    'mod+g': bindPagedownButton('image'),
+                    'mod+o': bindPagedownButton('olist'),
+                    'mod+u': bindPagedownButton('ulist'),
+                    'mod+h': bindPagedownButton('heading'),
+                    'mod+r': bindPagedownButton('hr'),
+                    'mod+z': bindPagedownButton('undo'),
+                    'mod+y': bindPagedownButton('redo'),
+                    'mod+shift+z': bindPagedownButton('redo'),
+                    'mod+m': function(evt) {
+                        $('.button-open-discussion').click();
+                        evt.preventDefault();
+                    },
+                    '= = > space': function() {
+                        expand('==> ', '⇒ ');
+                    },
+                    '< = = space': function() {
+                        expand('<== ', '⇐ ');
+                    },
+                    'S t a c k E d i t': function() {
+                        eventMgr.onMessage("You are stunned!!! Aren't you?");
+                    }
+                };
 			_.each(shortcutMap, function(func, shortcut) {
 				mousetrap.bind(shortcut, func);
 			});
@@ -108,7 +110,6 @@ define([
 	};
 
 	shortcuts.onReady = function() {
-		// utils.createTooltip(".tooltip-shortcuts-extension", tooltipSettingsShortcutsExtensionHTML);
 	};
 
 	return shortcuts;

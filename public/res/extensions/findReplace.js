@@ -6,23 +6,25 @@ define([
 	"classes/Extension",
 	"mousetrap",
 	"rangy",
-	"text!html/findReplace.html",
-	"text!html/findReplaceSettingsBlock.html"
-], function(_, crel, utils, Extension, mousetrap, rangy, findReplaceHTML, findReplaceSettingsBlockHTML) {
+	// "ext!html/findReplace.html",
+	// "ext!html/findReplaceSettingsBlock.html"
+], function(_, crel, utils, Extension, mousetrap, rangy) {
+
+	var findReplaceHTML = '<button type="button" class="close button-find-replace-dismiss">×</button>\n<div class="form-inline">\n    <div class="form-group">\n        <label for="input-find-replace-search-for">Search for</label>\n        <input class="form-control" id="input-find-replace-search-for" placeholder="Search for">\n    </div>\n    <div class="form-group">\n        <label for="input-find-replace-replace-with">Replace with</label>\n        <input class="form-control" id="input-find-replace-replace-with" placeholder="Replace with">\n    </div>\n</div>\n<div class="pull-right">\n    <div class="help-block text-right">\n        <span class="found-counter">0</span> found\n    </div>\n    <div>\n        <button type="button" class="btn btn-primary search-button">Search</button>\n        <button type="button" class="btn btn-default replace-button">Replace</button>\n        <button type="button" class="btn btn-default replace-all-button">All</button>\n    </div>\n</div>\n<div class="pull-left">\n    <div class="checkbox">\n        <label>\n            <input type="checkbox" class="checkbox-case-sensitive"> Case sensitive\n        </label>\n    </div>\n    <div class="checkbox">\n        <label>\n            <input type="checkbox" class="checkbox-regexp"> Regular expression\n        </label>\n    </div>\n</div>\n';
 
 	var findReplace = new Extension("findReplace", 'Find and Replace', true, true);
-	findReplace.settingsBlock = findReplaceSettingsBlockHTML;
+	// findReplace.settingsBlock = findReplaceSettingsBlockHTML;
 	findReplace.defaultConfig = {
 		findReplaceShortcut: 'mod+f'
 	};
 
-	findReplace.onLoadSettings = function() {
-		utils.setInputValue("#input-find-replace-shortcut", findReplace.config.findReplaceShortcut);
-	};
+	// findReplace.onLoadSettings = function() {
+	// 	utils.setInputValue("#input-find-replace-shortcut", findReplace.config.findReplaceShortcut);
+	// };
 
-	findReplace.onSaveSettings = function(newConfig, event) {
-		newConfig.findReplaceShortcut = utils.getInputTextValue("#input-find-replace-shortcut", event);
-	};
+	// findReplace.onSaveSettings = function(newConfig, event) {
+	// 	newConfig.findReplaceShortcut = utils.getInputTextValue("#input-find-replace-shortcut", event);
+	// };
 
 	var editor;
 	findReplace.onEditorCreated = function(editorParam) {

@@ -7,12 +7,12 @@ define([
 	'eventMgr',
 	'prism-core',
 	'diff_match_patch_uncompressed',
-	'jsondiffpatch',
+	// 'jsondiffpatch',
 	'crel',
 	'rangy',
 	'MutationObservers',
 	'libs/prism-markdown'
-], function( _, utils, settings, eventMgr, Prism, diff_match_patch, jsondiffpatch, crel, rangy) {
+], function( _, utils, settings, eventMgr, Prism, diff_match_patch, crel, rangy) {
 
 	var editor = {};
 	var scrollTop = 0;
@@ -107,6 +107,7 @@ define([
 	editor.watcher = watcher;
 
 	var diffMatchPatch = new diff_match_patch();
+	/*
 	var jsonDiffPatch = jsondiffpatch.create({
 		objectHash: function(obj) {
 			return JSON.stringify(obj);
@@ -118,6 +119,7 @@ define([
 			minLength: 9999999
 		}
 	});
+	*/
 
 	function SelectionMgr() {
 		var self = this;
@@ -555,6 +557,7 @@ define([
 
 	editor.focus = focus;
 
+	// 历史记录
 	function UndoMgr() {
 		var undoStack = [];
 		var redoStack = [];
@@ -626,6 +629,7 @@ define([
 				selectionMgr.setSelectionStartEnd(selectionStart, selectionEnd);
 				selectionMgr.updateSelectionRange();
 				selectionMgr.updateCursorCoordinates(true);
+				/*
 				var discussionListJSON = fileDesc.discussionListJSON;
 				if(discussionListJSON != state.discussionListJSON) {
 					var oldDiscussionList = fileDesc.discussionList;
@@ -646,6 +650,7 @@ define([
 					});
 					commentsChanged && eventMgr.onCommentsChanged(fileDesc);
 				}
+				*/
 			});
 
 			selectionStartBefore = selectionStart;
@@ -744,15 +749,17 @@ define([
 			undoMgr.currentMode = undoMgr.currentMode || 'typing';
 			var discussionList = _.values(fileDesc.discussionList);
 			fileDesc.newDiscussion && discussionList.push(fileDesc.newDiscussion);
-			var updateDiscussionList = adjustCommentOffsets(textContent, newTextContent, discussionList);
+			// var updateDiscussionList = adjustCommentOffsets(textContent, newTextContent, discussionList);
 			textContent = newTextContent;
-			if(updateDiscussionList === true) {
-				fileDesc.discussionList = fileDesc.discussionList; // Write discussionList in localStorage
-			}
+			// if(updateDiscussionList === true) {
+			// 	fileDesc.discussionList = fileDesc.discussionList; // Write discussionList in localStorage
+			// }
 			fileDesc.content = textContent;
 			selectionMgr.saveSelectionState();
 			eventMgr.onContentChanged(fileDesc, textContent);
-			updateDiscussionList && eventMgr.onCommentsChanged(fileDesc);
+
+			// updateDiscussionList && eventMgr.onCommentsChanged(fileDesc);
+
 			undoMgr.saveState();
 			triggerSpellCheck();
 		}
@@ -771,6 +778,7 @@ define([
 		}
 	}
 
+	/*
 	function adjustCommentOffsets(oldTextContent, newTextContent, discussionList) {
 		if(!discussionList.length) {
 			return;
@@ -819,6 +827,8 @@ define([
 	}
 
 	editor.adjustCommentOffsets = adjustCommentOffsets;
+	*
+	*/
 
 	// 入口
 	editor.init = function() {
@@ -1201,12 +1211,13 @@ define([
 	function highlight(section) {
 		var text = escape(section.text);
 
-		if(!window.viewerMode) {
+		// MDPureText 不用Prism
+		if(!window.LEAMDPureText) {
 			// log("pre")
 			// log(text);
 			// # lif
 			// 如果想以纯文本显示, 请注释之
-			// text = Prism.highlight(text, Prism.languages.md);
+			text = Prism.highlight(text, Prism.languages.md);
 			// log('after');
 			// <span class="token h1" ><span class="token md md-hash" >#</span> lif</span>
 			// log(text);

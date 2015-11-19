@@ -5,15 +5,15 @@ define([
 	"utils",
 	"logger",
 	"classes/Extension",
-	"text!html/markdownExtraSettingsBlock.html",
+	// "ext!html/markdownExtraSettingsBlock.html",
 	'google-code-prettify',
 	// 'highlightjs',
 	'crel',
 	'pagedownExtra'
-], function( _, utils, logger, Extension, markdownExtraSettingsBlockHTML, prettify) {
+], function( _, utils, logger, Extension, prettify) {
 
 	var markdownExtra = new Extension("markdownExtra", "Markdown Extra", true);
-	markdownExtra.settingsBlock = markdownExtraSettingsBlockHTML;
+	// markdownExtra.settingsBlock = markdownExtraSettingsBlockHTML;
 	markdownExtra.defaultConfig = {
 		extensions: [
 			"fenced_code_gfm",
@@ -28,41 +28,6 @@ define([
 		intraword: true,
 		comments: true,
 		highlighter: "highlight"
-	};
-
-	markdownExtra.onLoadSettings = function() {
-		function hasExtension(extensionName) {
-			return _.some(markdownExtra.config.extensions, function(extension) {
-				return extension == extensionName;
-			});
-		}
-
-		utils.setInputChecked("#input-markdownextra-fencedcodegfm", hasExtension("fenced_code_gfm"));
-		utils.setInputChecked("#input-markdownextra-tables", hasExtension("tables"));
-		utils.setInputChecked("#input-markdownextra-deflist", hasExtension("def_list"));
-		utils.setInputChecked("#input-markdownextra-attrlist", hasExtension("attr_list"));
-		utils.setInputChecked("#input-markdownextra-footnotes", hasExtension("footnotes"));
-		utils.setInputChecked("#input-markdownextra-smartypants", hasExtension("smartypants"));
-		utils.setInputChecked("#input-markdownextra-strikethrough", hasExtension("strikethrough"));
-		utils.setInputChecked("#input-markdownextra-newlines", hasExtension("newlines"));
-		utils.setInputChecked("#input-markdownextra-intraword", markdownExtra.config.intraword);
-		utils.setInputChecked("#input-markdownextra-comments", markdownExtra.config.comments);
-		utils.setInputValue("#input-markdownextra-highlighter", markdownExtra.config.highlighter);
-	};
-
-	markdownExtra.onSaveSettings = function(newConfig) {
-		newConfig.extensions = [];
-		utils.getInputChecked("#input-markdownextra-fencedcodegfm") && newConfig.extensions.push("fenced_code_gfm");
-		utils.getInputChecked("#input-markdownextra-tables") && newConfig.extensions.push("tables");
-		utils.getInputChecked("#input-markdownextra-deflist") && newConfig.extensions.push("def_list");
-		utils.getInputChecked("#input-markdownextra-attrlist") && newConfig.extensions.push("attr_list");
-		utils.getInputChecked("#input-markdownextra-footnotes") && newConfig.extensions.push("footnotes");
-		utils.getInputChecked("#input-markdownextra-smartypants") && newConfig.extensions.push("smartypants");
-		utils.getInputChecked("#input-markdownextra-strikethrough") && newConfig.extensions.push("strikethrough");
-		utils.getInputChecked("#input-markdownextra-newlines") && newConfig.extensions.push("newlines");
-		newConfig.intraword = utils.getInputChecked("#input-markdownextra-intraword");
-		newConfig.comments = utils.getInputChecked("#input-markdownextra-comments");
-		newConfig.highlighter = utils.getInputValue("#input-markdownextra-highlighter");
 	};
 
 	var eventMgr;
