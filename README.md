@@ -68,7 +68,7 @@ public/editor-mobile.html?debug
 
 ### LEAMD 全局
 
-```
+```javascript
 var LEAMD = {
   mdEditorO: $('#mdEditor'),
 
@@ -129,7 +129,7 @@ var LEAMD = {
 ```
 ### Filed对象方法
 
-```
+```javascript
 // 可写
 Field.enableEditing = function() {
 }
@@ -180,7 +180,7 @@ Field.setPlaceholderColor = function(color) {
 
 请使用 打包好的 public/leanote-ios, 并用webview加载editor-mobile.min.html
 
-```
+```javascript
 webview加载了之后, 立即调用:
 
 // 1. 初始化
