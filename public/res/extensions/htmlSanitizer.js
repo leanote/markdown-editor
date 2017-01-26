@@ -2,10 +2,9 @@ define([
 	// "jquery",
 	"underscore",
 	"utils",
-	"logger",
 	"classes/Extension",
 	// "ext!html/htmlSanitizerSettingsBlock.html"
-], function(_, utils, logger, Extension) {
+], function(_, utils, Extension) {
 
 	var htmlSanitizer = new Extension("htmlSanitizer", "HTML Sanitizer", true);
 	// htmlSanitizer.settingsBlock = htmlSanitizerSettingsBlockHTML;
@@ -16,9 +15,10 @@ define([
 		converter.hooks.chain("postConversion", function(html) {
 			buf = [];
 			html.split('<div class="se-preview-section-delimiter"></div>').forEach(function(sectionHtml) {
-				htmlParser(sectionHtml, htmlSanitizeWriter(buf, function(uri, isImage) {
+				htmlParser(sectionHtml, htmlSanitizeWriter(buf
+					/*, function(uri, isImage) {
 					return !/^unsafe/.test(sanitizeUri(uri, isImage));
-				}));
+				}*/));
 				buf.push('<div class="se-preview-section-delimiter"></div>');
 			});
 			return buf.slice(0, -1).join('');
@@ -31,17 +31,47 @@ define([
 	 * License: MIT
 	 */
 
-	var aHrefSanitizationWhitelist = /^\s*(https?|ftp|mailto|tel|file):/,
-		imgSrcSanitizationWhitelist = /^\s*(https?|ftp|file|leanote):|data:image\//;
+	// var aHrefSanitizationWhitelist = /^\s*(https?|ftp|mailto|tel|file):/,
+		// imgSrcSanitizationWhitelist = /^\s*(https?|ftp|file|leanote):|data:image\//;
+	/*
+	var urlResolve = (function() {
+		var urlParsingNode = document.createElement("a");
+		return function urlResolve(url) {
+			var href = url;
+
+			if (utils.msie) {
+				// Normalize before parse.  Refer Implementation Notes on why this is
+				// done in two steps on IE.
+				urlParsingNode.setAttribute("href", href);
+				href = urlParsingNode.href;
+			}
+
+			urlParsingNode.setAttribute('href', href);
+
+			// urlParsingNode provides the UrlUtils interface - http://url.spec.whatwg.org/#urlutils
+			return {
+				href: urlParsingNode.href,
+				protocol: urlParsingNode.protocol ? urlParsingNode.protocol.replace(/:$/, '') : '',
+				host: urlParsingNode.host,
+				search: urlParsingNode.search ? urlParsingNode.search.replace(/^\?/, '') : '',
+				hash: urlParsingNode.hash ? urlParsingNode.hash.replace(/^#/, '') : '',
+				hostname: urlParsingNode.hostname,
+				port: urlParsingNode.port,
+				pathname: (urlParsingNode.pathname.charAt(0) === '/') ?
+					urlParsingNode.pathname : '/' + urlParsingNode.pathname
+			};
+		};
+	})();
 
 	function sanitizeUri(uri, isImage) {
 		var regex = isImage ? imgSrcSanitizationWhitelist : aHrefSanitizationWhitelist;
 		var normalizedVal;
-		normalizedVal = utils.urlResolve(uri).href;
+		normalizedVal = urlResolve(uri).href;
 		if(normalizedVal !== '' && !normalizedVal.match(regex)) {
 			return 'unsafe:' + normalizedVal;
 		}
 	}
+	*/
 
 	// Regular Expressions for parsing tags and attributes
 	var START_TAG_REGEXP =
@@ -80,22 +110,22 @@ define([
 			optionalEndTagInlineElements,
 			optionalEndTagBlockElements);
 
+	// 允许的elements
 	// Safe Block Elements - HTML5
 	var blockElements = _.extend({}, optionalEndTagBlockElements, makeMap("address,article," +
 		"aside,blockquote,caption,center,del,dir,div,dl,figure,figcaption,footer,h1,h2,h3,h4,h5," +
-		"h6,header,hgroup,hr,ins,map,menu,nav,ol,pre,script,section,table,ul"));
+		"h6,header,hgroup,hr,ins,map,menu,nav,ol,pre,script,section,table,ul,embed,iframe"));
 
 	// Inline Elements - HTML5
 	var inlineElements = _.extend({}, optionalEndTagInlineElements, makeMap("a,abbr,acronym,b," +
 		"bdi,bdo,big,br,cite,code,del,dfn,em,font,i,img,ins,kbd,label,map,mark,q,ruby,rp,rt,s," +
-		"samp,small,span,strike,strong,sub,sup,time,tt,u,var"));
-
+		"samp,small,span,strike,strong,sub,sup,time,tt,u,var,input"));
 
 	// Special Elements (can contain anything)
 	var specialElements = makeMap("script,style");
 
 	// benweet: Add iframe
-	blockElements.iframe = true;
+	// blockElements.iframe = true;
 
 	var validElements = _.extend({},
 		voidElements,
@@ -110,7 +140,7 @@ define([
 			'color,cols,colspan,compact,coords,dir,face,headers,height,hreflang,hspace,' +
 			'ismap,lang,language,nohref,nowrap,rel,rev,rows,rowspan,rules,' +
 			'scope,scrolling,shape,size,span,start,summary,target,title,type,' +
-			'valign,value,vspace,width'));
+			'valign,value,vspace,width,checked,disabled'));
 
 	// benweet: Add id and allowfullscreen (YouTube iframe)
 	validAttrs.id = true;
@@ -345,7 +375,7 @@ define([
 	 *     comment: function(text) {}
 	 * }
 	 */
-	function htmlSanitizeWriter(buf, uriValidator) {
+	function htmlSanitizeWriter(buf /* , uriValidator */ ) {
 		var ignore = false;
 		var out = _.bind(buf.push, buf);
 		return {
@@ -359,9 +389,9 @@ define([
 					out(tag);
 					_.forEach(attrs, function(value, key) {
 						var lkey = key && key.toLowerCase();
-						var isImage = (tag === 'img' && lkey === 'src') || (lkey === 'background');
+						// var isImage = (tag === 'img' && lkey === 'src') || (lkey === 'background');
 						if(validAttrs[lkey] === true &&
-							(uriAttrs[lkey] !== true || uriValidator(value, isImage))) {
+							(uriAttrs[lkey] !== true || true/* || uriValidator(value, isImage) */)) {
 							out(' ');
 							out(key);
 							out('="');
