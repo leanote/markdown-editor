@@ -21,7 +21,7 @@ define([
 			"def_list",
 			"attr_list",
 			"footnotes",
-			"smartypants",
+			// "smartypants",
 			"strikethrough",
 			"newlines"
 		],
