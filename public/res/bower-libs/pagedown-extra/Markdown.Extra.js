@@ -452,7 +452,7 @@
 
       // build html
       var cls = self.tableClass ? ' class="' + self.tableClass + '"' : '';
-      var html = ['<table', cls, '>\n', '<thead>\n', '<tr>\n'].join('');
+      var html = ['<div class="md-table"><table', cls, '>\n', '<thead>\n', '<tr>\n'].join('');
 
       // build column headers.
       for (i = 0; i < colCount; i++) {
@@ -481,7 +481,7 @@
         html += "</tr>\n";
       }
 
-      html += "</table>\n";
+      html += "</table></div>\n";
 
       // replace html with placeholder until postConversion step
       return self.hashExtraBlock(html);
